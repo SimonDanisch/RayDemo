@@ -1,0 +1,9 @@
+# Large simulation data
+Waterlily/sim/
+.claude/
+
+# Trixi VTK frames (keep only frame 0, force-added)
+Trixi/fluid/*.vtk
+
+# Low-quality test renders from run_all.jl
+all_renders/
