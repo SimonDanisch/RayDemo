@@ -43,7 +43,7 @@ Volumetric path tracing of cloud data. `cloud_bomex.jl` renders LES cloud data f
 
 ## Water Splash
 
-https://github.com/user-attachments/assets/water_splash.mp4
+[![Watch the video](https://img.youtube.com/vi/SZwlpfda5jo/maxresdefault.jpg)](https://youtu.be/SZwlpfda5jo)
 
 **Script:** [`Trixi/water_splash.jl`](Trixi/water_splash.jl)
 
@@ -55,7 +55,7 @@ Ray-traced animation of a ball splashing into water, using fluid simulation data
 
 ## Smoke Wake
 
-https://github.com/user-attachments/assets/smoke_wake.mp4
+[![Watch the video](https://img.youtube.com/vi/iGltG8fM2K8/maxresdefault.jpg)](https://youtu.be/iGltG8fM2K8)
 
 **Script:** [`Waterlily/smoke_wake.jl`](Waterlily/smoke_wake.jl) | [`Waterlily/waterlily_simulation.jl`](Waterlily/waterlily_simulation.jl)
 
