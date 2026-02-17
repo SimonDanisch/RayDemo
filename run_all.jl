@@ -23,8 +23,9 @@ function run_all(;
         dir in skip_dirs && continue
         startswith(dir, ".") && continue
 
-        for f in sort(readdir(dirpath))
+        for f in reverse(sort(readdir(dirpath)))
             endswith(f, ".jl") || continue
+            f == "protein_trajectory.jl" && continue # Too long to render at low quality
             filepath = joinpath(dirpath, f)
             name = splitext(f)[1]
 

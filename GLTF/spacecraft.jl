@@ -50,11 +50,11 @@ function create_exhaust_medium(;
     )
 end
 
-envlight = FileIO.load(joinpath(@__DIR__, "..", "assets", "sky.exr"))
 
 function create_scene(; resolution=(1500, 1500))
     fig = Figure(size=resolution)
     radiance = 300
+    envlight = FileIO.load(joinpath(@__DIR__, "..", "assets", "sky.exr"))
     ax = LScene(fig[1, 1]; show_axis=false, scenekw=(;
         backgroundcolor=RGBf(0.02, 0.02, 0.03),
         lights=[
@@ -67,7 +67,7 @@ function create_scene(; resolution=(1500, 1500))
     # Load GLTF model via MeshIO — returns a MetaMesh with embedded materials
     # GLTF has 0.01 scale baked in, so scale up to make visible
     # From JuliaHub
-    spacecraft_mesh = FileIO.load(joinpath(@__DIR__, "assets", "hl20.gltf"))
+    spacecraft_mesh = FileIO.load(joinpath(@__DIR__, "assets", "hl20.gltf"); up=Vec3f(0, 1, 0))
     spacecraft_material = Hikari.CoatedDiffuseMaterial(
         reflectance=(0.95f0, 0.95f0, 0.95f0),
         roughness=0.001f0, eta=1.5f0, thickness=0.03f0
