@@ -1,5 +1,5 @@
 using AMDGPU
-using GLMakie, TraceMakie, Hikari
+using GLMakie, RayMakie, Hikari
 using FileIO, ImageShow
 
 global DEVICE = AMDGPU.ROCBackend()

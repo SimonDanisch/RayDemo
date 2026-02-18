@@ -1,6 +1,6 @@
 # RayDemo
 
-Demo scenes for [TraceMakie](https://github.com/MakieOrg/Makie.jl/tree/sd/hikari/TraceMakie) and [Hikari](https://github.com/pxl-th/Trace.jl), physically-based ray tracing in Julia. Each folder contains self-contained scripts that set up a scene and render it with spectral path tracing on GPU (AMD ROCm via AMDGPU.jl).
+Demo scenes for [RayMakie](https://github.com/MakieOrg/Makie.jl/tree/sd/hikari/RayMakie) and [Hikari](https://github.com/pxl-th/Trace.jl), physically-based ray tracing in Julia. Each folder contains self-contained scripts that set up a scene and render it with spectral path tracing on GPU (AMD ROCm via AMDGPU.jl).
 
 ## Setup
 
@@ -71,7 +71,7 @@ https://github.com/user-attachments/assets/boids_flocking.mp4
 
 **Script:** [`Ark/boids_flocking.jl`](Ark/boids_flocking.jl)
 
-Ray-traced flocking simulation using the Ark.jl Entity Component System. Gold metallic spheres swirl through space following separation, alignment, and cohesion rules. Ark ECS drives the simulation on CPU with a spatial hash grid; TraceMakie renders each frame with path tracing on GPU.
+Ray-traced flocking simulation using the Ark.jl Entity Component System. Gold metallic spheres swirl through space following separation, alignment, and cohesion rules. Ark ECS drives the simulation on CPU with a spatial hash grid; RayMakie renders each frame with path tracing on GPU.
 
 ---
 

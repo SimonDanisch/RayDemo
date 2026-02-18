@@ -393,7 +393,7 @@ function render_scene(;
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth)
     sensor = Hikari.FilmSensor(iso=30, white_balance=5500)
     @time result = Makie.colorbuffer(ax;
-        backend=TraceMakie, device=device, integrator=integrator, sensor=sensor,
+        backend=RayMakie, device=device, integrator=integrator, sensor=sensor,
     )
     save(output_path, result)
     @info "Saved → $output_path"
@@ -406,7 +406,7 @@ function render_interactive(;
 )
     ax = create_black_hole_scene(resolution=resolution)
     sensor = Hikari.FilmSensor(iso=30, white_balance=5500)
-    TraceMakie.interactive_window(ax; device=device, sensor=sensor, integrator=Hikari.VolPath(samples=1, max_depth=100))
+    RayMakie.interactive_window(ax; device=device, sensor=sensor, integrator=Hikari.VolPath(samples=1, max_depth=100))
     display(ax; backend=GLMakie, update=false)
 end
 

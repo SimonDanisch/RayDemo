@@ -2,7 +2,7 @@
 #
 # Provides functions to collect meshes from a Geant4 detector hierarchy
 # with an optional quadrant cut (removes x>0, y>0 region) using G4SubtractionSolid,
-# plus material mapping and scene construction for TraceMakie rendering.
+# plus material mapping and scene construction for RayMakie rendering.
 
 using Geant4
 using Geant4.SystemOfUnits

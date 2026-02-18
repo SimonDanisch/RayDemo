@@ -86,8 +86,8 @@ function create_trace_scene(lv_meshes; glass_meshes=nothing, resolution=(800, 10
         mat_idx += 1
         color_rgb = RGB(r, g, b)
         mat = color_to_material((color_rgb, Float64(a)))
-        color_tex = Hikari.ConstTexture(TraceMakie.to_spectrum(color_rgb))
-        mat = TraceMakie.merge_color_with_material(color_tex, mat)
+        color_tex = Hikari.ConstTexture(RayMakie.to_spectrum(color_rgb))
+        mat = RayMakie.merge_color_with_material(color_tex, mat)
         add_group!(meshes, mat, "opaque_$mat_idx")
     end
 
@@ -98,8 +98,8 @@ function create_trace_scene(lv_meshes; glass_meshes=nothing, resolution=(800, 10
             r, g, b, a = key
             a < 0.1 && continue
             mat_idx += 1
-            color_tex = Hikari.ConstTexture(TraceMakie.to_spectrum(RGB(r, g, b)))
-            mat = TraceMakie.merge_color_with_material(color_tex, Hikari.GlassMaterial())
+            color_tex = Hikari.ConstTexture(RayMakie.to_spectrum(RGB(r, g, b)))
+            mat = RayMakie.merge_color_with_material(color_tex, Hikari.GlassMaterial())
             add_group!(meshes, mat, "glass_$mat_idx")
         end
     end

@@ -83,7 +83,7 @@ function render_interactive(;
     resolution=(1200, 900),
 )
     scene = create_scene(; resolution=resolution)
-    TraceMakie.interactive_window(scene; device=device)
+    RayMakie.interactive_window(scene; device=device)
     display(scene; backend=GLMakie, update=false)
 end
 

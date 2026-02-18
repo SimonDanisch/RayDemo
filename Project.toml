@@ -24,7 +24,7 @@ ProteinChains = "b8e8f2a5-48d3-44f1-ba0d-c71cb7726ff8"
 Raycore = "afc56b53-c9a9-482a-a956-d1d800e05559"
 Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
-TraceMakie = "70852e3a-d594-4041-8350-783a02753e02"
+RayMakie = "70852e3a-d594-4041-8350-783a02753e02"
 Tyler = "e170d443-b9d6-418a-9ee8-061e966341ef"
 WaterLily = "ed894a53-35f9-47f1-b17f-85db9237eebd"
 XPalm = "6b523e1e-d512-416c-8e51-a8fbef0064e7"
@@ -34,6 +34,6 @@ Hikari = {url = "https://github.com/JuliaGraphics/Hikari.jl", rev = "sd/raycore-
 Raycore = {url = "https://github.com/JuliaGeometry/Raycore.jl", rev = "sd/multitype-vec"}
 Makie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", subdir = "Makie"}
 GLMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", subdir = "GLMakie"}
-TraceMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", subdir = "TraceMakie"}
+RayMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", subdir = "RayMakie"}
 ComputePipeline = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", subdir = "ComputePipeline"}
 ProtPlot = {url = "https://github.com/SimonDanisch/ProtPlot.jl.git", rev = "sd/merge-ribbons"}

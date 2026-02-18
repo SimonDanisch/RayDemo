@@ -55,7 +55,7 @@ function render_scene(;
     @time result = Makie.colorbuffer(ax.scene;
         device=device, integrator=integrator, sensor=sensor, update=false
     )
-    save(output_path, result)
+    isnothing(output_path) || save(output_path, result)
     @info "Saved → $output_path"
     return result
 end
@@ -65,8 +65,8 @@ function render_interactive(;
     resolution=(800, 800),
 )
     fig, ax = create_scene(; resolution=resolution)
-    TraceMakie.interactive_window(fig; device=device)
+    RayMakie.interactive_window(fig; device=device)
     display(fig; backend=GLMakie)
 end
 
-# render_scene()
+# render_scene(output_path=nothing)
