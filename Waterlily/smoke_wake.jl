@@ -160,9 +160,6 @@ function record_animation(sim, params=PARAMS;
     iso=100,
     kwargs...)
 
-    (; Cs) = params
-    (; Δ, udf, λ) = derived_params(params)
-
     # Allocate SGS arrays
     S = prepare_sgs(sim, params)
 
@@ -197,8 +194,7 @@ function record_animation(sim, params=PARAMS;
         exposure=exposure, tonemap=tonemap, gamma=gamma) do (i, t)
 
         # Advance simulation
-        sim_step!(sim, t; remeasure=false, λ, udf,
-                  νₜ=smagorinsky, S, Cs, Δ)
+        sim_step!(sim, t; remeasure=false)
         # Extract, preprocess, and pad vorticity (must match padded dimensions)
         vort = extract_vorticity(sim)
         vort_clean = preprocess_vorticity(vort;
