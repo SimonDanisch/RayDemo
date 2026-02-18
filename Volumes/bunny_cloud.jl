@@ -1,7 +1,7 @@
 # Bunny Cloud Scene - NanoVDB Volumetric Path Tracing Example
 # Uses actual NanoVDB volumetric data from pbrt-v4-scenes for spatially-varying density
 # This parses the NanoVDB file format directly in Julia and renders with GridMedium + VolPath
-include(joinpath(@__DIR__, "..", "common", "common.jl"))
+include("../common/common.jl")
 using GeometryBasics
 
 # Rotation matrix helpers for pbrt-style transforms

@@ -4,7 +4,7 @@
 #
 # Requires: bomex_1024.nanovdb (generate with convert_bomex.jl)
 
-include(joinpath(@__DIR__, "..", "common", "common.jl"))
+include("../common/common.jl")
 using Colors, GeometryBasics
 using LinearAlgebra: normalize
 using Hikari: RGBSpectrum, compute_perez_coefficients, compute_zenith_values, _compute_sky_radiance

@@ -1,4 +1,4 @@
-include(joinpath(@__DIR__, "..", "common", "common.jl"))
+include("../common/common.jl")
 using ProtPlot, ProteinChains
 
 function create_scene(; resolution=(800, 800))

@@ -107,87 +107,156 @@ const _mesh_counter = Ref{Int}(0)
 """
     polyhedron_to_mesh(ph, t::Transformation3D{Float64}) -> Union{GeometryBasics.Mesh, Nothing}
 
-Convert a Geant4 polyhedron to a GeometryBasics mesh with correct per-vertex normals.
-Uses Geant4's GetNextVertex iterator which provides normals from FindNodeNormal,
-correctly handling sharp edges by duplicating vertices where normals differ.
+Convert a Geant4 polyhedron to a GeometryBasics mesh with smooth per-vertex normals
+and correct hard-edge handling.
+
+Uses index-based GetVertex/GetFacet instead of the slow stateful GetNextVertex iterator.
+Vertices at hard edges (crease angle > threshold) are duplicated so that each smooth
+group gets its own normal. This prevents the renderer from flipping shading normals
+due to winding/normal disagreement at sharp features.
 
 Returns nothing if the polyhedron is invalid or empty.
 """
-function polyhedron_to_mesh(ph, t::Transformation3D{Float64})
+function polyhedron_to_mesh(ph, t::Transformation3D{Float64}; crease_cos::Float64=0.5)
     ph == C_NULL && return nothing
 
+    nv = GetNoVertices(ph)
     nf = GetNoFacets(ph)
-    nf <= 0 && return nothing
+    (nv <= 0 || nf <= 0) && return nothing
 
     # Debug: track mesh count
     _mesh_counter[] += 1
     if _mesh_counter[] % 100 == 0
-        println("Processing mesh #$(_mesh_counter[]), nf=$nf")
+        println("Processing mesh #$(_mesh_counter[]), nv=$nv, nf=$nf")
     end
 
-    # Fresh objects for iterator (don't reuse - might cause state issues)
-    g4_vertex = G4Point3D()
-    g4_normal = G4Normal3D()
-    edge_flag = Ref{Int32}(0)
+    # Collect all vertices at once (nv FFI calls)
+    local_points = Vector{Vec3{Float64}}(undef, nv)
+    world_points = Vector{Point3{Float64}}(undef, nv)
+    for i in 1:nv
+        v = GetVertex(ph, i)
+        p_local = Vec3{Float64}(v[1], v[2], v[3])
+        local_points[i] = p_local
+        world_points[i] = Point3{Float64}(apply_transform(t, p_local)...)
+    end
 
-    # Collect vertices and normals per face (vertices duplicated at sharp edges)
-    all_points = Point3{Float64}[]
-    all_normals = Vec3{Float32}[]
-    faces = Union{TriangleFace, QuadFace}[]
+    # Pass 1: Collect face data (nf FFI calls for GetFacet + nf for GetNormal)
+    # Store: face vertex indices, face normal (world space), vertex count per face
+    face_verts = Vector{NTuple{4,Int32}}(undef, nf)
+    face_nverts = Vector{Int}(undef, nf)
+    face_normals_world = Vector{Vec3{Float64}}(undef, nf)
+    # vertex → list of face indices
+    vert_faces = [Int[] for _ in 1:nv]
 
-    face_indices = Int[]
-    vertex_idx = 0
-    faces_done = 0
+    nodes_buf = Vector{Int32}(undef, 4)
+    n_ref = Ref{Int32}(0)
+    valid_faces = 0
 
-    max_iter = min(nf * 5, 10000)  # Hard limit
-    iter_count = 0
-    GC.@preserve g4_vertex g4_normal begin
-        for _ in 1:max_iter
-            iter_count += 1
-            result = GetNextVertex(ph, g4_vertex, edge_flag, g4_normal)
+    for i in 1:nf
+        GetFacet(ph, i, n_ref, nodes_buf)
+        nn = n_ref[]
+        nn < 3 && continue
+        valid_faces += 1
 
-            # Transform vertex: p_world = R^T * p_local + translation
-            p_local = Vec3{Float64}(g4_vertex[1], g4_vertex[2], g4_vertex[3])
-            p_world = apply_transform(t, p_local)
+        g4n = GetNormal(ph, i)
+        g4_normal = Vec3{Float64}(g4n[1], g4n[2], g4n[3])
+        g4_world = t.rotation' * g4_normal
+        g4_len = LinearAlgebra.norm(g4_world)
+        if g4_len > 0
+            g4_world = g4_world / g4_len
+        end
 
-            # Transform normal (rotation only, then normalize)
-            n_local = Vec3{Float64}(g4_normal[1], g4_normal[2], g4_normal[3])
-            n_world = t.rotation * n_local
-            n_len = LinearAlgebra.norm(n_world)
-            n_world = n_len > 0 ? n_world / n_len : Vec3{Float64}(0, 0, 1)
+        face_verts[valid_faces] = (nodes_buf[1], nodes_buf[2], nodes_buf[3], nodes_buf[4])
+        face_nverts[valid_faces] = nn
+        face_normals_world[valid_faces] = g4_world
 
-            # Add vertex with Geant4's computed normal
-            vertex_idx += 1
-            push!(all_points, Point3{Float64}(p_world...))
-            push!(all_normals, Vec3{Float32}(n_world...))
-            push!(face_indices, vertex_idx)
+        for j in 1:nn
+            push!(vert_faces[nodes_buf[j]], valid_faces)
+        end
+    end
 
-            if !result  # End of current face
-                faces_done += 1
-                n_verts = length(face_indices)
-                if n_verts == 3
-                    push!(faces, TriangleFace(face_indices...))
-                elseif n_verts == 4
-                    push!(faces, QuadFace(face_indices...))
-                elseif n_verts > 4
-                    # Fan triangulation for larger polygons
-                    for i in 2:(n_verts-1)
-                        push!(faces, TriangleFace(face_indices[1], face_indices[i], face_indices[i+1]))
-                    end
-                end
-                empty!(face_indices)
-                faces_done >= nf && break
+    valid_faces == 0 && return nothing
+
+    # Pass 2: For each (vertex, face) pair, compute the smooth normal by averaging
+    # normals from adjacent faces at that vertex within the crease angle.
+    # If a vertex has multiple smooth groups, it gets duplicated.
+    out_points = Point3{Float64}[]
+    out_normals = Vec3{Float32}[]
+    # Map (original_vertex, face_index) → new vertex index
+    # We use a per-vertex group assignment to reuse indices within smooth groups.
+    vert_new_idx = Vector{Vector{Tuple{Vec3{Float64}, Int}}}(undef, nv)
+    for i in 1:nv
+        vert_new_idx[i] = Tuple{Vec3{Float64}, Int}[]
+    end
+
+    function get_or_create_vertex(vi::Int32, face_idx::Int)
+        fn = face_normals_world[face_idx]
+        # Compute smooth normal for this vertex from compatible adjacent faces
+        smooth_n = Vec3{Float64}(0, 0, 0)
+        for adj_fi in vert_faces[vi]
+            if LinearAlgebra.dot(face_normals_world[adj_fi], fn) >= crease_cos
+                smooth_n += face_normals_world[adj_fi]
+            end
+        end
+        sn_len = LinearAlgebra.norm(smooth_n)
+        smooth_n = sn_len > 0 ? smooth_n / sn_len : fn
+
+        # Check if we already have a vertex with this smooth normal
+        for (existing_n, idx) in vert_new_idx[vi]
+            if LinearAlgebra.dot(existing_n, smooth_n) > 0.999
+                return idx
+            end
+        end
+
+        # Create new vertex
+        push!(out_points, world_points[vi])
+        push!(out_normals, Vec3{Float32}(smooth_n...))
+        new_idx = length(out_points)
+        push!(vert_new_idx[vi], (smooth_n, new_idx))
+        return new_idx
+    end
+
+    # Pass 3: Build faces with new vertex indices + winding check
+    out_faces = Vector{Union{TriangleFace, QuadFace}}()
+    sizehint!(out_faces, valid_faces)
+
+    for fi in 1:valid_faces
+        fv = face_verts[fi]
+        nn = face_nverts[fi]
+
+        # Get new vertex indices
+        new_vi = ntuple(j -> get_or_create_vertex(fv[j], fi), nn)
+
+        # Winding check: geometric normal from world-space points vs face normal
+        p1 = out_points[new_vi[1]]
+        p2 = out_points[new_vi[2]]
+        p3 = out_points[new_vi[3]]
+        e1 = Vec3{Float64}((p2 - p1)...)
+        e2 = Vec3{Float64}((p3 - p1)...)
+        geo_n = Vec3{Float64}(
+            e1[2]*e2[3] - e1[3]*e2[2],
+            e1[3]*e2[1] - e1[1]*e2[3],
+            e1[1]*e2[2] - e1[2]*e2[1]
+        )
+        needs_flip = LinearAlgebra.dot(geo_n, face_normals_world[fi]) < 0
+
+        if nn == 3
+            if needs_flip
+                push!(out_faces, TriangleFace(new_vi[1], new_vi[3], new_vi[2]))
+            else
+                push!(out_faces, TriangleFace(new_vi[1], new_vi[2], new_vi[3]))
+            end
+        elseif nn == 4
+            if needs_flip
+                push!(out_faces, QuadFace(new_vi[1], new_vi[4], new_vi[3], new_vi[2]))
+            else
+                push!(out_faces, QuadFace(new_vi[1], new_vi[2], new_vi[3], new_vi[4]))
             end
         end
     end
 
-    # Debug: warn if we didn't process all faces
-    if faces_done < nf
-        @warn "polyhedron_to_mesh: only processed $faces_done/$nf faces (iter=$iter_count, max=$max_iter)"
-    end
-
-    isempty(faces) && return nothing
-    return GeometryBasics.Mesh(all_points, faces; normal=all_normals)
+    isempty(out_faces) && return nothing
+    return GeometryBasics.Mesh(out_points, out_faces; normal=out_normals)
 end
 
 """
@@ -398,7 +467,59 @@ function collect_detector_meshes(world; maxlevel::Int=5, cut_quadrant::Bool=true
     collect_meshes_with_cut!(lv, lv_meshes, glass_meshes, cutter, cutter_offset,
                                 one(Transformation3D{Float64}), 1, maxlevel)
 
+    # Normalize all meshes to fit in a ~10-unit cube (preserving aspect ratio).
+    # Geant4 coordinates can be very large (thousands of mm), which causes
+    # Float32 precision issues in the ray tracer.
+    normalize_meshes!(lv_meshes, glass_meshes)
+
     return lv_meshes, glass_meshes
+end
+
+"""
+    normalize_meshes!(lv_meshes, glass_meshes)
+
+Rescale all mesh vertices so the entire scene fits in a cube of roughly size 10,
+centered at the origin. Preserves aspect ratio. Normals are unaffected since they
+are unit vectors.
+"""
+function normalize_meshes!(lv_meshes, glass_meshes)
+    # Pass 1: compute global bounding box across all meshes
+    lo = Vec3f(Inf, Inf, Inf)
+    hi = Vec3f(-Inf, -Inf, -Inf)
+    for dict in (lv_meshes, glass_meshes)
+        for (_, (meshes, _, _)) in dict
+            for m in meshes
+                for p in GeometryBasics.coordinates(m)
+                    lo = Vec3f(min(lo[1], p[1]), min(lo[2], p[2]), min(lo[3], p[3]))
+                    hi = Vec3f(max(hi[1], p[1]), max(hi[2], p[2]), max(hi[3], p[3]))
+                end
+            end
+        end
+    end
+
+    extent = hi - lo
+    max_extent = max(extent[1], extent[2], extent[3])
+    if max_extent < 1f-6
+        @warn "All meshes are degenerate, skipping normalization"
+        return
+    end
+
+    scale = 10f0 / max_extent
+    center = Point3f(((lo + hi) * 0.5f0)...)
+    println("Normalizing meshes: bbox [$lo, $hi], center=$center, scale=$scale")
+
+    # Pass 2: rescale all vertex positions in-place
+    for dict in (lv_meshes, glass_meshes)
+        for (_, (meshes, _, _)) in dict
+            for (mi, m) in enumerate(meshes)
+                old_pts = GeometryBasics.coordinates(m)
+                new_pts = [Point3f(((Vec3f(p...) - Vec3f(center...)) * scale)...) for p in old_pts]
+                # Rebuild mesh with new positions but same normals and faces
+                meshes[mi] = GeometryBasics.Mesh(new_pts, GeometryBasics.faces(m);
+                                                  normal=m.normal)
+            end
+        end
+    end
 end
 
 # ============================================================================
@@ -411,9 +532,9 @@ function color_to_material(color::Tuple{RGB, Float64})
 
     # Map specific colors to appropriate materials
     if r > 0.8 && g < 0.4 && b < 0.4  # Orangered (Fe)
-        return Hikari.CoatedDiffuseMaterial(reflectance=(r, g, b), roughness=0.15f0, eta=1.5f0)
+        return Hikari.Copper(roughness=0.01f0)
     elseif r < 0.3 && g < 0.3 && b > 0.7  # Blue (Cu)
-        return Hikari.Copper(roughness=0.1f0, reflectance=(0.5f0, 0.5f0, 1.0f0))
+        return Hikari.CoatedDiffuseMaterial(reflectance=(r, g, b), roughness=0.15f0, eta=1.5f0)
     elseif r > 0.8 && g > 0.8 && b < 0.3  # Yellow (Si)
         return Hikari.Gold(roughness=0.2f0, reflectance=(1.0f0, 1.0f0, 0.8f0))
     elseif r > 0.7 && g > 0.7 && b > 0.7  # White/silver
@@ -435,7 +556,7 @@ Convert a color to a thin glass material for the cut-out wedge visualization.
 """
 function color_to_glass_material(color::Tuple{RGB, Float64})
     # ThinDielectric passes light straight through (no refraction bending)
-    return Hikari.ThinDielectric(eta=1.5f0)
+    return Hikari.Glass()
 end
 
 color_to_glass_material(color::ColorTypes.Color) =
@@ -490,52 +611,6 @@ function draw_detector!(scene, lv_meshes; wireframe::Bool=false)
     return scene
 end
 
-# ============================================================================
-# Create TraceMakie scene
-# ============================================================================
-
-function create_trace_scene(lv_meshes; glass_meshes=nothing, resolution=(800, 1080))
-    color_groups = group_meshes_by_color(lv_meshes)
-    println("Grouped into $(length(color_groups)) unique color groups")
-
-    fig = Figure(size=resolution)
-    ax = LScene(fig[1, 1]; show_axis=false, scenekw=(;
-        backgroundcolor=RGBf(0.02, 0.02, 0.03),
-        lights=[
-            PointLight(RGBf(8, 8, 10), Vec3f(-8000, 3000, -5000)),
-            AmbientLight(RGBf(0.15, 0.15, 0.18)),
-        ]
-    ))
-
-    # Add meshes with materials
-    for (key, meshes) in color_groups
-        r, g, b, a = key
-        a < 0.1 && continue
-
-        merged = merge(meshes)
-        color_rgb = RGB(r, g, b)
-        mat = color_to_material((color_rgb, Float64(a)))
-        mesh!(ax, merged; color=color_rgb, material=mat)
-    end
-
-    # Add glass meshes for the cut-out wedge
-    if glass_meshes !== nothing
-        glass_groups = group_meshes_by_color(glass_meshes)
-        println("Grouped into $(length(glass_groups)) unique glass color groups")
-
-        for (key, meshes) in glass_groups
-            r, g, b, a = key
-            a < 0.1 && continue
-
-            merged = merge(meshes)
-            color_rgb = RGB(r, g, b)
-            mat = color_to_glass_material((color_rgb, Float64(a)))
-            mesh!(ax, merged; color=color_rgb, material=mat)
-        end
-    end
-
-    return fig, ax
-end
 
 # ============================================================================
 # Set camera from show_cam output

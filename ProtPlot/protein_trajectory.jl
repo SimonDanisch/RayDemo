@@ -1,4 +1,4 @@
-include(joinpath(@__DIR__, "..", "common", "common.jl"))
+include("../common/common.jl")
 using ProtPlot
 
 basedir = joinpath(@__DIR__, "Trajectories")

@@ -1,4 +1,4 @@
-include(joinpath(@__DIR__, "..", "common", "common.jl"))
+include("../common/common.jl")
 using Ark
 using GeometryBasics
 using LinearAlgebra

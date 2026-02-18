@@ -1,5 +1,5 @@
 # SpaceCraft HL-20 Demo - Ray Traced Visualization
-include(joinpath(@__DIR__, "..", "common", "common.jl"))
+include("../common/common.jl")
 using MeshIO
 
 # Create rocket exhaust volume with emission that fades along the plume

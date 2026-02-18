@@ -1,4 +1,4 @@
-include(joinpath(@__DIR__, "..", "common", "common.jl"))
+include("../common/common.jl")
 using GeometryBasics
 using GeometryBasics: Point3f, GLTriangleFace, Rect3f, normal_mesh, Mesh
 using FFMPEG_jll

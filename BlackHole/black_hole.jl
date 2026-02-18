@@ -1,4 +1,4 @@
-include(joinpath(@__DIR__, "..", "common", "common.jl"))
+include("../common/common.jl")
 using GeometryBasics
 using Raycore
 using LinearAlgebra: normalize, norm, cross, dot, I

@@ -1,7 +1,7 @@
 # WaterLily Sphere Wake — Raytraced Smoke Visualization
 # Realistic cloud-like look with RGBGridMedium colormap
 
-include(joinpath(@__DIR__, "..", "common", "common.jl"))
+include("../common/common.jl")
 include(joinpath(@__DIR__, "..", "common", "waterlily_simulation.jl"))
 using GeometryBasics
 

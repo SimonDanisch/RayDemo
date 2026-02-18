@@ -4,7 +4,7 @@
 #
 # Requires: bomex_1024.nanovdb (generate with convert_bomex.jl)
 
-include(joinpath(@__DIR__, "..", "common", "common.jl"))
+include("../common/common.jl")
 using GeometryBasics
 
 function create_scene(nvdb_path; resolution=(1280, 720))

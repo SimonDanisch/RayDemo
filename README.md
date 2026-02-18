@@ -1,6 +1,6 @@
 # RayDemo
 
-Demo scenes for [TraceMakie](https://github.com/MakieOrg/Makie.jl/tree/sd/hikari/TraceMakie) and [Hikari](https://github.com/pxl-th/Trace.jl) — physically-based ray tracing in Julia. Each folder contains self-contained scripts that set up a scene and render it with spectral path tracing on GPU (AMD ROCm via AMDGPU.jl).
+Demo scenes for [TraceMakie](https://github.com/MakieOrg/Makie.jl/tree/sd/hikari/TraceMakie) and [Hikari](https://github.com/pxl-th/Trace.jl), physically-based ray tracing in Julia. Each folder contains self-contained scripts that set up a scene and render it with spectral path tracing on GPU (AMD ROCm via AMDGPU.jl).
 
 ## Setup
 
@@ -81,9 +81,7 @@ Ray-traced flocking simulation using the Ark.jl Entity Component System. Gold me
 
 **Script:** [`Geant4/cms_detector.jl`](Geant4/cms_detector.jl)
 
-**currently broken**
-
-Ray-traced visualization of the CMS (Compact Muon Solenoid) particle detector at CERN, loaded from GDML geometry files via Geant4.jl. A quadrant cut reveals internal structure. Detector elements are mapped to physically-based metal materials (gold, copper, silver, aluminum).
+Ray-traced visualization of the CMS (Compact Muon Solenoid) particle detector at CERN, loaded from GDML geometry files via Geant4.jl. A quadrant cut reveals internal structure. Detector elements are mapped to physically-based metal materials (gold, copper, silver, aluminum, iron). Meshes are generated from Geant4's tessellated polyhedra with crease-angle vertex splitting for smooth normals on curved surfaces.
 
 **Attribution:** CMS detector geometry: CERN, via [Geant4.jl](https://github.com/JuliaHEP/Geant4.jl).
 
@@ -95,11 +93,9 @@ Ray-traced visualization of the CMS (Compact Muon Solenoid) particle detector at
 
 ![Protein 7PKZ](ProtPlot/protein_7pkz.png)
 
-![Protein Gold](ProtPlot/protein_gold.png)
-
 **Scripts:** [`ProtPlot/protein_ribbon.jl`](ProtPlot/protein_ribbon.jl) | [`ProtPlot/protein_glass.jl`](ProtPlot/protein_glass.jl) | [`ProtPlot/protein_7pkz.jl`](ProtPlot/protein_7pkz.jl) | [`ProtPlot/protein_gold.jl`](ProtPlot/protein_gold.jl) | [`ProtPlot/protein_trajectory.jl`](ProtPlot/protein_trajectory.jl)
 
-Ray-traced protein ribbon diagrams using ProtPlot.jl with various materials — glass, coated diffuse, and gold. `protein_trajectory.jl` animates a protein folding trajectory. Protein structures are fetched from the Protein Data Bank (PDB: 1HQK, 7PKZ).
+Ray-traced protein ribbon diagrams using ProtPlot.jl with various materials: glass, coated diffuse with depth of field, and gold. `protein_trajectory.jl` animates a protein folding trajectory. Protein structures are fetched from the Protein Data Bank (PDB: 1HQK, 7PKZ).
 
 **Attribution:** [ProtPlot.jl](https://github.com/MurrellGroup/ProtPlot.jl) by Ben Murrell; structures from [RCSB PDB](https://www.rcsb.org/).
 
@@ -115,7 +111,7 @@ Ray-traced protein ribbon diagrams using ProtPlot.jl with various materials — 
 
 Ray-traced rendering of GLTF/GLB 3D models. `drone_christmas.jl` renders a Christmas tree with glowing emissive decorations and a hovering drone in a room scene. `spacecraft.jl` renders an HL-20 spacecraft with a volumetric rocket exhaust plume.
 
-**Attribution:** Christmas tree from [Sketchfab](https://sketchfab.com/3d-models/25k-followers-christmas-special-1fd1cdc4c2d94ecfa8d80a25f1818e8c); drone and HL-20 spacecraft from JuliaHub.
+**Attribution:** Christmas tree from [Sketchfab](https://sketchfab.com/3d-models/25k-followers-christmas-special-1fd1cdc4c2d94ecfa8d80a25f1818e8c); quadcopter and HL-20 spacecraft models provided by [JuliaHub](https://juliahub.com).
 
 ---
 
