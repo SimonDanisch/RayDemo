@@ -7,7 +7,6 @@ ComputePipeline = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 Extents = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
 FFMPEG_jll = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-GLTF = "aeeaf58c-ab4d-11e9-3a9f-9b6bf58b4bc3"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 Geant4 = "559df036-b7a0-42fd-85df-7d5dd9d70f44"
 GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
@@ -37,3 +36,4 @@ GLMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", 
 RayMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", subdir = "RayMakie"}
 ComputePipeline = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", subdir = "ComputePipeline"}
 ProtPlot = {url = "https://github.com/SimonDanisch/ProtPlot.jl.git", rev = "sd/merge-ribbons"}
+BiotSavartBCs = {url = "https://github.com/weymouth/BiotSavartBCs.jl", rev = "main"}
