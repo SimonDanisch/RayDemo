@@ -37,3 +37,4 @@ GLMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", 
 RayMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", subdir = "RayMakie"}
 ComputePipeline = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", subdir = "ComputePipeline"}
 ProtPlot = {url = "https://github.com/SimonDanisch/ProtPlot.jl.git", rev = "sd/merge-ribbons"}
+BiotSavartBCs = {url = "https://github.com/weymouth/BiotSavartBCs.jl", rev = "main"}
