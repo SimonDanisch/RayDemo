@@ -91,7 +91,7 @@ function SchlierenMedium(
     bounds::Hikari.Bounds3 = Hikari.Bounds3(Point3f(-5f0), Point3f(5f0)),
     transform::Mat4f = Mat4f(I),
     deflection_scale::Float32 = 50f0,
-    deflection_padding::Float32 = 5f0,
+    deflection_padding::Float32 = 0.1f0,
     absorption_scale::Float32 = 15f0,
 )
     inv_transform = inv(transform)
@@ -311,21 +311,33 @@ function create_thermal_plume(; resolution::Int=128, time_phase::Float32=0f0)
         dy = y - 0.5f0
         r = sqrt(dx*dx + dy*dy)
 
-        # Plume widens with altitude (entrainment)
-        plume_width = 0.06f0 + 0.12f0 * z
+        # Plume widens with altitude via entrainment — narrow source, broad top
+        plume_width = 0.03f0 + 0.15f0 * z * z
         radial_profile = exp(-r*r / (2f0 * plume_width^2))
 
-        # Vertical envelope: starts at bottom, fades at top
-        z_envelope = z * exp(-2.5f0 * z)
+        # Sharper radial edge — schlieren shows edges clearly
+        edge_ring = exp(-((r - plume_width * 1.2f0)^2) / (0.003f0))
 
-        # Sinusoidal pseudo-turbulence perturbations
+        # Vertical envelope: gradual onset, sustained through middle, fade at top
+        z_envelope = smoothstep(0.01f0, 0.1f0, z) * exp(-1.5f0 * max(z - 0.65f0, 0f0))
+
+        # Multi-scale turbulence for realistic fine structure
         θ = atan(dy, dx)
-        turb1 = 0.3f0 * sin(6f0 * θ + 8f0 * z + time_phase)
-        turb2 = 0.15f0 * sin(12f0 * θ - 5f0 * z + 2.3f0 * time_phase)
-        turb3 = 0.1f0 * cos(4f0 * θ + 15f0 * z - 1.7f0 * time_phase)
-        turbulence = 1f0 + turb1 + turb2 + turb3
+        # Large-scale billowing (mushroom puffs)
+        turb1 = 0.4f0 * sin(4f0 * θ + 6f0 * z + time_phase)
+        # Medium-scale whorls
+        turb2 = 0.3f0 * sin(8f0 * θ - 10f0 * z + 2.3f0 * time_phase)
+        # Fine-scale wrinkles
+        turb3 = 0.2f0 * cos(14f0 * θ + 20f0 * z - 1.7f0 * time_phase)
+        turb4 = 0.15f0 * sin(22f0 * θ + 30f0 * z + 0.8f0 * time_phase)
+        # Extra fine detail
+        turb5 = 0.08f0 * cos(30f0 * θ - 15f0 * z + 3.1f0 * time_phase)
+        # Axial modulation — creates distinct puffs along the plume
+        axial_mod = 1f0 + 0.4f0 * sin(10f0 * z + time_phase * 0.7f0)
+        turbulence = (1f0 + turb1 + turb2 + turb3 + turb4 + turb5) * axial_mod
 
-        d = radial_profile * z_envelope * turbulence
+        # Combine: core profile + edge ring (schlieren highlights both)
+        d = (0.6f0 * radial_profile + 0.4f0 * edge_ring) * z_envelope * turbulence
         d = max(d, 0f0)
 
         density[ix + pad, iy + pad, iz + pad] = d
@@ -339,22 +351,49 @@ function create_thermal_plume(; resolution::Int=128, time_phase::Float32=0f0)
     return density
 end
 
+# Smooth step helper (GLSL-style)
+function smoothstep(edge0::Float32, edge1::Float32, x::Float32)
+    t = clamp((x - edge0) / (edge1 - edge0), 0f0, 1f0)
+    return t * t * (3f0 - 2f0 * t)
+end
+
 # ============================================================================
 # Stripe Environment Map
 # ============================================================================
 
 """
-    create_stripe_envmap(; map_size=512, stripe_count=40) -> Matrix{RGBf}
+    create_schlieren_envmap(; map_size=512, style=:color_gradient) -> Matrix{RGBf}
 
-Create a square environment map with vertical stripe pattern (equal-area octahedral format).
+Create a square environment map in equal-area octahedral format for schlieren background.
+Colors are assigned based on 3D direction to ensure correct appearance in the camera view.
+- `:color_gradient` — vivid warm→cool gradient keyed to world-space X (left→right)
+- `:bright` — uniform bright white (classic shadowgraph)
 """
-function create_stripe_envmap(; map_size::Int=512, stripe_count::Int=40)
+function create_schlieren_envmap(; map_size::Int=512, style::Symbol=:color_gradient)
     img = Matrix{RGBf}(undef, map_size, map_size)
-    bright = RGBf(0.95f0, 0.95f0, 0.95f0)
-    dark = RGBf(0.05f0, 0.05f0, 0.05f0)
     for j in 1:map_size, i in 1:map_size
-        stripe_idx = floor(Int, (j - 1) / map_size * stripe_count)
-        img[i, j] = iseven(stripe_idx) ? bright : dark
+        # Map pixel to [0,1]² UV, then to 3D direction via octahedral inverse
+        uv = Point2f((j - 0.5f0) / map_size, (i - 0.5f0) / map_size)
+        dir = Hikari.equal_area_square_to_sphere(uv)
+
+        if style == :color_gradient
+            # Azimuthal angle relative to +Y (camera forward direction)
+            angle = atan(dir[1], dir[2])  # -π to π
+            # Map visible FOV to [0, 1] — wider range for smoother transition
+            t = clamp((angle + 0.5f0) / 1f0, 0f0, 1f0)
+            # Classic schlieren 5-color ramp: blue → cyan → green → yellow → red
+            r = clamp(min(4f0 * (t - 0.5f0), 4f0 * (1.25f0 - t)), 0f0, 1f0)
+            g = clamp(min(4f0 * (t - 0.15f0), 4f0 * (0.85f0 - t)), 0f0, 1f0)
+            b = clamp(min(4f0 * (0.55f0 - t), 1f0), 0f0, 1f0)
+            # Slight brightness boost to keep background bright
+            img[i, j] = RGBf(
+                clamp(r * 0.8f0 + 0.2f0, 0f0, 1f0),
+                clamp(g * 0.8f0 + 0.2f0, 0f0, 1f0),
+                clamp(b * 0.8f0 + 0.2f0, 0f0, 1f0),
+            )
+        else
+            img[i, j] = RGBf(0.97f0, 0.95f0, 0.91f0)  # warm paper tint
+        end
     end
     return img
 end
@@ -367,10 +406,10 @@ function create_schlieren_scene(;
     resolution=(1280, 720),
     density_resolution::Int=128,
     deflection_scale::Float32=50f0,
-    deflection_padding::Float32=5f0,
-    absorption_scale::Float32=15f0,
+    deflection_padding::Float32=0.1f0,
+    absorption_scale::Float32=6f0,
     time_phase::Float32=0f0,
-    stripe_count::Int=40,
+    envmap_style::Symbol=:bright,
     volume_size::Float32=10f0,
 )
     @info "Creating thermal plume density field..."
@@ -380,6 +419,8 @@ function create_schlieren_scene(;
     bounds = Hikari.Bounds3(Point3f(-half, -half, -half), Point3f(half, half, half))
 
     @info "Building SchlierenMedium (computing gradients)..."
+    # Neutral absorption → all wavelengths see same σ → minimal spectral noise
+    # Post-process toning could add color; neutral gives cleanest shadowgraph
     medium = SchlierenMedium(
         density;
         bounds=bounds,
@@ -394,17 +435,17 @@ function create_schlieren_scene(;
         outside=nothing,
     )
 
-    # Stripe environment map as background
-    stripe_image = create_stripe_envmap(; map_size=512, stripe_count=stripe_count)
+    # Schlieren background environment map
+    envmap_image = create_schlieren_envmap(; map_size=512, style=envmap_style)
 
     fig = Figure(; size=resolution)
     ax = LScene(fig[1, 1]; show_axis=false, scenekw=(;
         lights=[
-            Makie.EnvironmentLight(3f0, stripe_image),
+            Makie.EnvironmentLight(5f0, envmap_image),
         ]
     ))
 
-    # Medium boundary sphere (same pattern as BlackHole)
+    # Medium boundary sphere — large enough to keep edges out of frame
     boundary_radius = half * sqrt(3f0)
     mesh!(ax, Sphere(Point3f(0, 0, 0), boundary_radius);
         color=:black, visible=false,
@@ -412,12 +453,12 @@ function create_schlieren_scene(;
         transparency=true,
     )
 
-    # Camera: side-on view looking through the medium at the background
+    # Camera: side-on view, tight crop on the plume to hide sphere boundary
     cam = ax.scene.camera_controls
-    cam.eyeposition[] = Vec3f(0, volume_size * 2.5f0, volume_size * 0.1f0)
-    cam.lookat[] = Vec3f(0, 0, 0)
+    cam.eyeposition[] = Vec3f(0, volume_size * 2.0f0, volume_size * 0.05f0)
+    cam.lookat[] = Vec3f(0, 0, volume_size * 0.05f0)
     cam.upvector[] = Vec3f(0, 0, 1)
-    cam.fov[] = 35f0
+    cam.fov[] = 30f0
     update_cam!(ax.scene, cam)
 
     return fig, ax
