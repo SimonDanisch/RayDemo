@@ -1,7 +1,13 @@
-# Schlieren Imaging Demo — Visualizing density gradients via ray deflection
+# Schlieren Imaging Demo — Visualizing density gradients via absorption
 #
-# Schlieren imaging renders a nearly transparent medium where the visual
-# information comes from ray deflection distorting a background stripe pattern.
+# Schlieren/shadowgraph imaging makes density gradients visible by modulating
+# light absorption proportional to the gradient magnitude.  Regions of strong
+# refractive-index gradient (plume edges) absorb more light, creating dark
+# bands against a bright striped background — the hallmark schlieren pattern.
+#
+# The medium also implements apply_deflection for ray-path curvature through
+# the density field (eikonal deflection), which subtly shifts sampling positions
+# during delta tracking.
 
 include("../common/common.jl")
 using GeometryBasics
@@ -13,6 +19,11 @@ using FFMPEG_jll
 # Gradient Computation
 # ============================================================================
 
+"""
+    compute_density_gradient(density) -> (grad_x, grad_y, grad_z)
+
+Central finite differences on a 3D grid, one-sided at boundaries.
+"""
 function compute_density_gradient(density::Array{Float32,3})
     nx, ny, nz = size(density)
     grad_x = zeros(Float32, nx, ny, nz)
@@ -49,36 +60,39 @@ function compute_density_gradient(density::Array{Float32,3})
 end
 
 # ============================================================================
-# SchlierenMedium — A medium that bends light through density gradients
+# SchlierenMedium — Gradient-absorption medium with eikonal deflection
 # ============================================================================
 
+# Module-level gradient store: apply_deflection has no `media` parameter,
+# so it cannot call Raycore.deref on TextureRef fields.
+const GRADIENT_STORE = Dict{UInt64, Array{Vec3f,3}}()
+
 struct SchlierenMedium{T<:AbstractArray{Float32,3}} <: Hikari.Medium
-    density::T
+    density::T              # density field (for deflection path sampling)
+    grad_magnitude::T       # |∇ρ| field (for absorption-based visualization)
     density_res::Vec3{Int}
     max_density::Float32
-    grad_x::T
-    grad_y::T
-    grad_z::T
     max_grad_magnitude::Float32
+    gradient_id::UInt64     # key into GRADIENT_STORE for apply_deflection
     bounds::Hikari.Bounds3
     render_to_medium::Mat4f
     medium_to_render::Mat4f
-    σ_a::Hikari.RGBSpectrum
-    σ_s::Hikari.RGBSpectrum
+    σ_a::Hikari.RGBSpectrum # absorption color
     g::Float32
     deflection_scale::Float32
     deflection_padding::Float32
+    absorption_scale::Float32  # strength of gradient-based absorption
 end
 
 function SchlierenMedium(
     density::AbstractArray{Float32,3};
-    σ_a::Hikari.RGBSpectrum = Hikari.RGBSpectrum(0.0001f0),
-    σ_s::Hikari.RGBSpectrum = Hikari.RGBSpectrum(0.0001f0),
+    σ_a::Hikari.RGBSpectrum = Hikari.RGBSpectrum(1f0),
     g::Float32 = 0f0,
-    bounds::Hikari.Bounds3 = Hikari.Bounds3(Point3f(-5f0, -5f0, -5f0), Point3f(5f0, 5f0, 5f0)),
+    bounds::Hikari.Bounds3 = Hikari.Bounds3(Point3f(-5f0), Point3f(5f0)),
     transform::Mat4f = Mat4f(I),
     deflection_scale::Float32 = 50f0,
-    deflection_padding::Float32 = 5f0
+    deflection_padding::Float32 = 5f0,
+    absorption_scale::Float32 = 15f0,
 )
     inv_transform = inv(transform)
     max_density = Float32(maximum(density))
@@ -87,25 +101,35 @@ function SchlierenMedium(
 
     grad_x, grad_y, grad_z = compute_density_gradient(Array(density))
 
+    # Build gradient vector array (for deflection) and magnitude array (for absorption)
+    gradient = Array{Vec3f,3}(undef, nx, ny, nz)
+    grad_mag = zeros(Float32, nx, ny, nz)
     max_grad_mag = 0f0
     for iz in 1:nz, iy in 1:ny, ix in 1:nx
-        mag = sqrt(grad_x[ix,iy,iz]^2 + grad_y[ix,iy,iz]^2 + grad_z[ix,iy,iz]^2)
+        gv = Vec3f(grad_x[ix,iy,iz], grad_y[ix,iy,iz], grad_z[ix,iy,iz])
+        gradient[ix,iy,iz] = gv
+        mag = norm(gv)
+        grad_mag[ix,iy,iz] = mag
         max_grad_mag = max(max_grad_mag, mag)
     end
 
-    # Convert gradient arrays to same type as density (for GPU compatibility)
-    T = typeof(density)
-    gx = convert(T, grad_x)::T
-    gy = convert(T, grad_y)::T
-    gz = convert(T, grad_z)::T
-    d = convert(T, Array(density))::T
+    # Normalize gradient magnitude to [0,1]
+    if max_grad_mag > 0f0
+        grad_mag ./= max_grad_mag
+    end
+
+    # Store gradient vectors in module-level dict (scalars survive TextureRef)
+    gid = objectid(gradient)
+    GRADIENT_STORE[gid] = gradient
 
     SchlierenMedium(
-        d, density_res, max_density,
-        gx, gy, gz, max_grad_mag,
+        density, grad_mag, density_res,
+        max_density, max_grad_mag,
+        gid,
         bounds, inv_transform, transform,
-        σ_a, σ_s, g,
-        deflection_scale, deflection_padding
+        σ_a, g,
+        deflection_scale, deflection_padding,
+        absorption_scale,
     )
 end
 
@@ -113,10 +137,10 @@ end
 # Trilinear Interpolation
 # ============================================================================
 
-@inline function sample_field(arr, density_res::Vec3{Int}, bounds::Hikari.Bounds3, p_medium::Point3f)::Float32
+@inline function sample_field(arr, density_res::Vec3{Int}, bounds::Hikari.Bounds3, p_medium::Point3f)
     p_norm = (p_medium - bounds.p_min) ./ (bounds.p_max - bounds.p_min)
     if any(p_norm .< 0f0) || any(p_norm .> 1f0)
-        return 0f0
+        return zero(eltype(arr))
     end
 
     nx, ny, nz = density_res[1], density_res[2], density_res[3]
@@ -170,10 +194,13 @@ function Hikari.sample_point(
     p4 = medium.render_to_medium * Vec4f(p[1], p[2], p[3], 1f0)
     p_medium = Point3f(p4[1], p4[2], p4[3])
 
-    density_arr = Raycore.deref(media, medium.density)
-    d = sample_field(density_arr, medium.density_res, medium.bounds, p_medium)
-    σ_a = Hikari.uplift_rgb_unbounded(table, medium.σ_a, λ) * d
-    σ_s = Hikari.uplift_rgb_unbounded(table, medium.σ_s, λ) * d
+    # Absorption proportional to gradient magnitude (schlieren/shadowgraph effect)
+    grad_mag_arr = Raycore.deref(media, medium.grad_magnitude)
+    gm = sample_field(grad_mag_arr, medium.density_res, medium.bounds, p_medium)
+    σ_a = Hikari.uplift_rgb_unbounded(table, medium.σ_a, λ) * (gm * medium.absorption_scale)
+
+    # No scattering — medium is transparent except for gradient-based absorption
+    σ_s = Hikari.SpectralRadiance(0f0)
 
     return Hikari.MediumProperties(σ_a, σ_s, Hikari.SpectralRadiance(0f0), medium.g)
 end
@@ -191,9 +218,9 @@ function Hikari.create_majorant_iterator(
     if t_enter >= t_exit
         return Hikari.RayMajorantIterator_homogeneous(0f0, 0f0, Hikari.SpectralRadiance(0f0))
     end
-    σ_a = Hikari.uplift_rgb_unbounded(table, medium.σ_a, λ)
-    σ_s = Hikari.uplift_rgb_unbounded(table, medium.σ_s, λ)
-    σ_maj = (σ_a + σ_s) * medium.max_density + Hikari.SpectralRadiance(medium.deflection_padding)
+    # Majorant must bound the maximum possible σ_a (normalized grad_mag ≤ 1)
+    σ_a_max = Hikari.uplift_rgb_unbounded(table, medium.σ_a, λ) * medium.absorption_scale
+    σ_maj = σ_a_max + Hikari.SpectralRadiance(medium.deflection_padding)
     return Hikari.RayMajorantIterator_homogeneous(t_enter, t_exit, σ_maj)
 end
 
@@ -221,9 +248,8 @@ using Base: @propagate_inbounds
             (Int32(0), Int32(0), Int32(0))
         )
     end
-    σ_a = Hikari.uplift_rgb_unbounded(table, medium.σ_a, λ)
-    σ_s = Hikari.uplift_rgb_unbounded(table, medium.σ_s, λ)
-    σ_maj = (σ_a + σ_s) * medium.max_density + Hikari.SpectralRadiance(medium.deflection_padding)
+    σ_a_max = Hikari.uplift_rgb_unbounded(table, medium.σ_a, λ) * medium.absorption_scale
+    σ_maj = σ_a_max + Hikari.SpectralRadiance(medium.deflection_padding)
     return Hikari.RayMajorantIterator{M}(
         Int32(1), σ_maj,
         t_enter, t_exit, false, template_grid,
@@ -244,27 +270,20 @@ function Hikari.apply_deflection(
     p4 = medium.render_to_medium * Vec4f(p[1], p[2], p[3], 1f0)
     p_medium = Point3f(p4[1], p4[2], p4[3])
 
-    # Sample pre-computed gradients via trilinear interpolation
-    # NOTE: Accesses gradient arrays directly (no Raycore.deref) since
-    # apply_deflection has no `media` parameter. Works if T supports
-    # direct indexing (CPU Array or GPU device array).
-    gx = sample_field(medium.grad_x, medium.density_res, medium.bounds, p_medium)
-    gy = sample_field(medium.grad_y, medium.density_res, medium.bounds, p_medium)
-    gz = sample_field(medium.grad_z, medium.density_res, medium.bounds, p_medium)
+    # Look up gradient from module-level store (survives TextureRef conversion)
+    grad = sample_field(GRADIENT_STORE[medium.gradient_id], medium.density_res, medium.bounds, p_medium)
 
-    grad_mag = sqrt(gx*gx + gy*gy + gz*gz)
+    grad_mag = norm(grad)
     if grad_mag < 1f-8
         return ray_d
     end
 
     # Convert gradient from voxel-index-space to world-space
     extent = medium.bounds.p_max - medium.bounds.p_min
-    world_gx = gx / extent[1]
-    world_gy = gy / extent[2]
-    world_gz = gz / extent[3]
+    world_grad = Vec3f(grad[1] / extent[1], grad[2] / extent[2], grad[3] / extent[3])
 
     # Eikonal deflection: bend ray toward density gradient
-    deflection = Vec3f(world_gx, world_gy, world_gz) * medium.deflection_scale * dt
+    deflection = world_grad * medium.deflection_scale * dt
     new_d = ray_d + deflection
     n = norm(new_d)
     if n < 1f-8
@@ -321,6 +340,26 @@ function create_thermal_plume(; resolution::Int=128, time_phase::Float32=0f0)
 end
 
 # ============================================================================
+# Stripe Environment Map
+# ============================================================================
+
+"""
+    create_stripe_envmap(; map_size=512, stripe_count=40) -> Matrix{RGBf}
+
+Create a square environment map with vertical stripe pattern (equal-area octahedral format).
+"""
+function create_stripe_envmap(; map_size::Int=512, stripe_count::Int=40)
+    img = Matrix{RGBf}(undef, map_size, map_size)
+    bright = RGBf(0.95f0, 0.95f0, 0.95f0)
+    dark = RGBf(0.05f0, 0.05f0, 0.05f0)
+    for j in 1:map_size, i in 1:map_size
+        stripe_idx = floor(Int, (j - 1) / map_size * stripe_count)
+        img[i, j] = iseven(stripe_idx) ? bright : dark
+    end
+    return img
+end
+
+# ============================================================================
 # Scene Construction
 # ============================================================================
 
@@ -329,8 +368,7 @@ function create_schlieren_scene(;
     density_resolution::Int=128,
     deflection_scale::Float32=50f0,
     deflection_padding::Float32=5f0,
-    σ_a=Hikari.RGBSpectrum(0.0001f0),
-    σ_s=Hikari.RGBSpectrum(0.0001f0),
+    absorption_scale::Float32=15f0,
     time_phase::Float32=0f0,
     stripe_count::Int=40,
     volume_size::Float32=10f0,
@@ -344,11 +382,10 @@ function create_schlieren_scene(;
     @info "Building SchlierenMedium (computing gradients)..."
     medium = SchlierenMedium(
         density;
-        σ_a=σ_a,
-        σ_s=σ_s,
         bounds=bounds,
         deflection_scale=deflection_scale,
         deflection_padding=deflection_padding,
+        absorption_scale=absorption_scale,
     )
 
     volume_material = Hikari.MediumInterface(
@@ -357,49 +394,15 @@ function create_schlieren_scene(;
         outside=nothing,
     )
 
-    # Scene
+    # Stripe environment map as background
+    stripe_image = create_stripe_envmap(; map_size=512, stripe_count=stripe_count)
+
     fig = Figure(; size=resolution)
     ax = LScene(fig[1, 1]; show_axis=false, scenekw=(;
         lights=[
-            PointLight(RGBf(80000, 80000, 80000), Vec3f(0, 30, 10)),
-            AmbientLight(RGBf(0.3, 0.3, 0.3)),
+            Makie.EnvironmentLight(3f0, stripe_image),
         ]
     ))
-
-    # --- Background screen with vertical stripes ---
-    # Separate meshes for white/black stripes (solid color per mesh avoids
-    # vertex-color textures which JLBackend cannot convert)
-    screen_dist = volume_size * 2f0
-    screen_half = volume_size * 1.5f0
-    stripe_width = 2f0 * screen_half / stripe_count
-
-    white_material = Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(0.9f0, 0.9f0, 0.9f0))
-    black_material = Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(0.05f0, 0.05f0, 0.05f0))
-
-    for (stripe_color, mat, col) in [(:white, white_material, RGBf(0.95, 0.95, 0.95)),
-                                      (:black, black_material, RGBf(0.05, 0.05, 0.05))]
-        verts = Point3f[]
-        tris = GLTriangleFace[]
-        for i in 0:stripe_count-1
-            want_white = iseven(i)
-            (stripe_color == :white) != want_white && continue
-            x_lo = -screen_half + i * stripe_width
-            x_hi = x_lo + stripe_width
-            base = length(verts)
-            push!(verts,
-                Point3f(x_lo, -screen_dist, -screen_half),
-                Point3f(x_hi, -screen_dist, -screen_half),
-                Point3f(x_hi, -screen_dist,  screen_half),
-                Point3f(x_lo, -screen_dist,  screen_half),
-            )
-            push!(tris,
-                GLTriangleFace(base+1, base+2, base+3),
-                GLTriangleFace(base+1, base+3, base+4),
-            )
-        end
-        m = GeometryBasics.normal_mesh(verts, tris)
-        mesh!(ax, m; color=col, material=mat)
-    end
 
     # Medium boundary sphere (same pattern as BlackHole)
     boundary_radius = half * sqrt(3f0)
