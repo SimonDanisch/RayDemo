@@ -29,7 +29,7 @@ WaterLily = "ed894a53-35f9-47f1-b17f-85db9237eebd"
 XPalm = "6b523e1e-d512-416c-8e51-a8fbef0064e7"
 
 [sources]
-Hikari = {url = "https://github.com/JuliaGraphics/Hikari.jl", rev = "sd/raycore-refactor"}
+Hikari = {url = "https://github.com/JuliaGraphics/Hikari.jl", rev = "master"}
 Raycore = {url = "https://github.com/JuliaGeometry/Raycore.jl", rev = "sd/multitype-vec"}
 Makie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", subdir = "Makie"}
 GLMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/hikari", subdir = "GLMakie"}
