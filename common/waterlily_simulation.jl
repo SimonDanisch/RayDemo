@@ -19,10 +19,6 @@ const PARAMS = (
     Re = 3700,                  # Reynolds number
     U = 1,                      # Freestream velocity
 
-    # SGS model
-    explicit_sgs = true,        # Use explicit Smagorinsky SGS model
-    Cs = 0.17f0,               # Smagorinsky constant
-
     # Timing (in CTU - convective time units)
     time_max = 200,            # Total simulation time
     stats_init = 100,          # Time to start collecting statistics
@@ -44,15 +40,8 @@ const PARAMS = (
 derived_params(p) = (
     m = 3 * 2^p.p,
     R = (3 * 2^p.p) ÷ 3,
-    Δ = sqrt(3.0f0),           # Filter width √(1² + 1² + 1²)
-    udf = p.explicit_sgs ? sgs! : nothing,
-    λ = p.explicit_sgs ? cds : quick,
     fname_base = joinpath(p.datadir, "p$(p.p)"),
 )
-
-# SGS model
-smagorinsky(I::CartesianIndex{m} where m; S, Cs, Δ) =
-    @views (Cs * Δ)^2 * sqrt(2dot(S[I, :, :], S[I, :, :]))
 
 # Sphere geometry
 function make_sphere(m; n=5m ÷ 2, R=m ÷ 3, U=1, Re=3700, T=Float32, mem=Array)
