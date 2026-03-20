@@ -1,0 +1,129 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "7900xtx",
+        "cpu_name": "7900x",
+        "device_name": "7900x",
+        "backend": "abacus",
+        "n_elements": 10000000,
+        "version": "v1",
+        "timestamp": "2026-03-20 21:11:57",
+        "julia_version": "1.12.5",
+        "cpu_threads": 24
+    },
+    "benchmarks": {
+        "sort/UInt32/acck": {
+            "median_ms": 153.356,
+            "min_ms": 147.227,
+            "timings_ms": [
+                153.998,
+                153.356,
+                147.227
+            ]
+        },
+        "sort/Float32/acck": {
+            "median_ms": 121.85,
+            "min_ms": 119.857,
+            "timings_ms": [
+                119.857,
+                121.85,
+                123.526
+            ]
+        },
+        "reduce/UInt32/acck": {
+            "median_ms": 19090.061,
+            "min_ms": 18952.595,
+            "timings_ms": [
+                19247.301,
+                19369.687,
+                19023.513,
+                18952.595,
+                19090.061
+            ]
+        },
+        "reduce/Float32/acck": {
+            "median_ms": 19547.229,
+            "min_ms": 19052.41,
+            "timings_ms": [
+                19052.41,
+                19729.728,
+                19503.525,
+                19690.459,
+                19547.229
+            ]
+        },
+        "accumulate/UInt32/acck": {
+            "median_ms": 47377.236,
+            "min_ms": 46923.29,
+            "timings_ms": [
+                47626.839,
+                46923.29,
+                47153.731,
+                47399.946,
+                47377.236
+            ]
+        },
+        "accumulate/Float32/acck": {
+            "median_ms": 46850.291,
+            "min_ms": 45929.488,
+            "timings_ms": [
+                46432.897,
+                45929.488,
+                47371.861,
+                46850.291,
+                46922.181
+            ]
+        },
+        "map/Float32/acck_2x": {
+            "median_ms": 3542.754,
+            "min_ms": 3423.055,
+            "timings_ms": [
+                3867.324,
+                3490.832,
+                3423.055,
+                3565.044,
+                3542.754
+            ]
+        },
+        "map/Float32/acck_sin": {
+            "median_ms": 3649.02,
+            "min_ms": 3574.199,
+            "timings_ms": [
+                3649.02,
+                3574.199,
+                3580.576,
+                3769.374,
+                3713.496
+            ]
+        },
+        "mapreduce/Float32/acck_sin": {
+            "median_ms": 19539.697,
+            "min_ms": 19371.964,
+            "timings_ms": [
+                19642.1,
+                19539.697,
+                19382.968,
+                19613.514,
+                19371.964
+            ]
+        },
+        "sortperm/UInt32/acck": {
+            "median_ms": 1153.588,
+            "min_ms": 1135.013,
+            "timings_ms": [
+                1153.588,
+                1169.561,
+                1135.013
+            ]
+        },
+        "sortperm/Float32/acck": {
+            "median_ms": 1217.151,
+            "min_ms": 1148.532,
+            "timings_ms": [
+                1225.791,
+                1217.151,
+                1148.532
+            ]
+        }
+    }
+}

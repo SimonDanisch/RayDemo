@@ -409,7 +409,7 @@ function plot_device(device_name::String;
         end
 
         for c in 3:n_cols
-            Axis(fig[row, c], visible=false)
+            # empty cell
         end
         row += 1
     end
@@ -430,7 +430,7 @@ function plot_device(device_name::String;
             Legend(fig[row, n_cols + 1], ak_ax, framevisible=false, padding=(0,0,0,0))
         end
         for c in (n_ak+1):n_cols
-            Axis(fig[row, c], visible=false)
+            # empty cell
         end
     end
 
@@ -477,6 +477,91 @@ function plot_all_devices(;
         end
     end
     return figs
+end
+
+# =============================================================================
+# Cross-device overview: mean speedup per backend across all devices
+# =============================================================================
+
+"""
+    plot_overview(; results_dir, output_dir) -> Figure
+
+Cross-device overview: geometric mean speedup per GPU backend on render benchmarks.
+Only includes devices with GPU render data. Excludes AK (incomparable scales)
+and CPU-only backends.
+"""
+function plot_overview(;
+    results_dir::String = BENCHMARK_RESULTS_DIR,
+    output_dir::String = joinpath(BENCHMARK_RESULTS_DIR, "plots"),
+)
+    mkpath(output_dir)
+    devices = group_by_device(; results_dir)
+
+    # Only devices with ≥2 render backends
+    gpu_backends = Set(["lava_hw", "lava_sw", "lava", "cuda", "amdgpu", "pbrt_gpu", "pbrt_cpu", "abacus"])
+    backend_order = ["lava_hw", "lava_sw", "cuda", "amdgpu", "pbrt_gpu", "pbrt_cpu", "abacus"]
+
+    plot_devices = String[]
+    device_speedups = OrderedDict{String, OrderedDict{String, Float64}}()
+
+    for (dname, dev) in devices
+        isempty(dev.render) && continue
+        length(dev.render) < 2 && continue
+
+        _, bnames, timing = build_render_data(dev.render)
+        speedups = OrderedDict{String, Float64}()
+        for (bi, bn) in enumerate(bnames)
+            speedups[bn] = geomean_speedup(timing, bi)
+        end
+        if length(speedups) >= 2
+            push!(plot_devices, dname)
+            device_speedups[dname] = speedups
+        end
+    end
+
+    isempty(plot_devices) && (@warn "No multi-backend render devices"; return nothing)
+
+    # Collect all backends present, sorted
+    all_backends = OrderedCollections.OrderedSet{String}()
+    for s in values(device_speedups), bn in keys(s)
+        push!(all_backends, bn)
+    end
+    present_backends = sort(collect(all_backends),
+        by=b -> something(findfirst(==(b), backend_order), 100))
+
+    fig = Figure(size=(max(700, 180 * length(plot_devices)), 400))
+    ax = Axis(fig[1, 1],
+        title = "Render Speedup vs Slowest (geometric mean across scenes)",
+        ylabel = "Speedup (×)",
+        xticks = (1:length(plot_devices), plot_devices),
+        xticklabelrotation = pi/6,
+    )
+
+    bar_width = 0.8 / length(present_backends)
+    for (bi, bn) in enumerate(present_backends)
+        xs = Float64[]
+        ys = Float64[]
+        for (di, dname) in enumerate(plot_devices)
+            s = get(device_speedups[dname], bn, NaN)
+            if !isnan(s)
+                offset = di + (bi - (length(present_backends) + 1) / 2) * bar_width
+                push!(xs, offset)
+                push!(ys, s)
+            end
+        end
+        if !isempty(xs)
+            barplot!(ax, xs, ys; width=bar_width * 0.9,
+                     color=backend_color(bn), label=backend_label(bn))
+        end
+    end
+
+    hlines!(ax, [1.0]; color=:gray, linestyle=:dash, linewidth=1)
+    Legend(fig[1, 2], ax, framevisible=false)
+
+    save_path = joinpath(output_dir, "overview.png")
+    save(save_path, fig; px_per_unit=2)
+    println("Saved: $save_path")
+    return fig
 end
 
 # =============================================================================

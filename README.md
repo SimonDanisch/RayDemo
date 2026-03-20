@@ -1,6 +1,19 @@
 # RayDemo
 
-Demo scenes for [RayMakie](https://github.com/MakieOrg/Makie.jl/tree/sd/hikari/RayMakie) and [Hikari](https://github.com/pxl-th/Trace.jl), physically-based ray tracing in Julia. Each folder contains self-contained scripts that set up a scene and render it with spectral path tracing on GPU (AMD ROCm via AMDGPU.jl).
+Demo scenes for [RayMakie](https://github.com/MakieOrg/Makie.jl/tree/sd/hikari/RayMakie) and [Hikari](https://github.com/pxl-th/Trace.jl), physically-based ray tracing in Julia. Each folder contains self-contained scripts that set up a scene and render it with spectral path tracing on GPU.
+
+## Benchmarks — AMD RX 7900 XTX
+
+![RayDemo Benchmarks on 7900 XTX](benchmark/results/plots/7900xtx.png)
+
+Render times and compute kernel benchmarks on AMD RX 7900 XTX / Ryzen 9 7900X. Compares three backends:
+- **Lava HW RT** — [Lava.jl](https://github.com/SimonDanisch/Lava.jl) with hardware ray tracing (`VK_KHR_ray_tracing_pipeline`)
+- **Lava SW** — Lava.jl with software BVH traversal (compute shaders only)
+- **AMDGPU** — [AMDGPU.jl](https://github.com/JuliaGPU/AMDGPU.jl) via ROCm/HIP
+
+Lava SW is **1.4-2.5x faster than AMDGPU** across all scenes. Hardware RT adds another **1.0-2.3x** on geometry-heavy scenes. Bottom row: AcceleratedKernels.jl compute benchmarks at 10M and 100M elements — Lava is up to **23x faster** on dispatch-sensitive workloads.
+
+Full benchmark data in [`benchmark/results/`](benchmark/results/).
 
 ## Setup
 
@@ -11,7 +24,10 @@ julia --project=.
 using Pkg; Pkg.instantiate()
 ```
 
-Rendering requires an AMD GPU with ROCm support. To use CUDA instead, replace `AMDGPU.ROCBackend()` with `CUDA.CUDABackend()` in the scripts.
+Rendering requires a GPU. Supported backends:
+- **Lava.jl** (Vulkan) — `LavaBackend()` — works on AMD, NVIDIA, Intel, Apple (MoltenVK)
+- **AMDGPU.jl** (ROCm) — `ROCBackend()` — AMD only
+- **CUDA.jl** — `CUDABackend()` — NVIDIA only
 
 ---
 
