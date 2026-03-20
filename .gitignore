@@ -7,3 +7,9 @@ Trixi/fluid/*.vtk
 
 # Low-quality test renders from run_all.jl
 all_renders/
+
+# Per-scene render outputs
+**/output/
+
+# Benchmark results (machine-specific)
+benchmark/results/

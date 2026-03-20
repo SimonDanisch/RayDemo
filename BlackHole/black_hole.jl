@@ -295,7 +295,7 @@ function create_black_hole_density(resolution::Int=64;
     return density
 end
 
-function create_black_hole_scene(;
+function create_scene(;
     resolution=(1600, 900),
     density_resolution::Int=64,
     schwarzschild_radius=1.0f0,
@@ -386,15 +386,16 @@ function render_scene(;
     resolution=(1600, 900),
     samples=1000,
     max_depth=100,
-    output_path=joinpath(@__DIR__, "black_hole.png"),
+    output_path=joinpath(@__DIR__, "output", "black_hole.png"),
 )
-    ax = create_black_hole_scene(resolution=resolution)
+    ax = create_scene(resolution=resolution)
     GC.gc(true)
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth)
     sensor = Hikari.FilmSensor(iso=30, white_balance=5500)
     @time result = Makie.colorbuffer(ax;
         backend=RayMakie, device=device, integrator=integrator, sensor=sensor,
     )
+    mkpath(dirname(output_path))
     save(output_path, result)
     @info "Saved → $output_path"
     return result
@@ -404,7 +405,7 @@ function render_interactive(;
     device=DEVICE,
     resolution=(800, 450),
 )
-    ax = create_black_hole_scene(resolution=resolution)
+    ax = create_scene(resolution=resolution)
     sensor = Hikari.FilmSensor(iso=30, white_balance=5500)
     RayMakie.interactive_window(ax; device=device, sensor=sensor, integrator=Hikari.VolPath(samples=1, max_depth=100))
     display(ax; backend=GLMakie, update=false)

@@ -1,0 +1,233 @@
+# Material Gallery Scene - matching Julia/RayMakie materials.jl
+# 5x4 grid of spheres showcasing 20 different materials
+#
+# Camera: eye=(0, -7.5, 2.5), lookat=(0, -4.7, 0), up=(0, 0, 1), fov=42
+# Lights: point at (8, 8, 10) I=60, point at (-2, -6, 3) I=20
+# Grid: sphere_radius=0.25, spacing=0.7, 5 rows x 4 cols
+# Resolution: 1200x900
+
+Sampler "halton"
+
+LookAt 0 -7.5 2.5   0 -4.7 0   0 0 1
+
+Camera "perspective"
+    "float fov" 42
+
+Film "rgb"
+    "integer xresolution" 1200
+    "integer yresolution" 900
+    "string filename" "materials.exr"
+
+Integrator "volpath" "integer maxdepth" 50
+
+WorldBegin
+
+# Light 1: position (8, 8, 10), radiance 60
+AttributeBegin
+    Translate 8 8 10
+    LightSource "point" "rgb I" [60 60 60]
+AttributeEnd
+
+# Light 2: position (-2, -6, 3), radiance 20
+AttributeBegin
+    Translate -2 -6 3
+    LightSource "point" "rgb I" [20 20 20]
+AttributeEnd
+
+# Floor: diffuse Kd=0.7
+AttributeBegin
+    Material "diffuse" "rgb reflectance" [0.7 0.7 0.7]
+    Shape "disk" "float radius" 10
+AttributeEnd
+
+# ==========================================================================
+# Row 1 (front, y=-5.9): Glass, TexturedGlass, Milk, Smoke
+# ==========================================================================
+
+# (1,1) Glass - dielectric eta=1.5
+AttributeBegin
+    Translate -1.05 -5.9 0.25
+    Material "dielectric" "float eta" 1.5
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (1,2) Textured Glass - dielectric with slight tint (no texture in pbrt, use plain)
+AttributeBegin
+    Translate -0.35 -5.9 0.25
+    Material "dielectric" "float eta" 1.5
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (1,3) Milk - dielectric boundary with homogeneous scattering medium inside
+AttributeBegin
+    Translate 0.35 -5.9 0.25
+    MakeNamedMedium "milk" "string type" "homogeneous"
+        "rgb sigma_a" [0.00011 0.00024 0.0014]
+        "rgb sigma_s" [0.255 0.321 0.377]
+    MediumInterface "" "milk"
+    Material "dielectric" "float eta" 1.5
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (1,4) Smoke - dielectric boundary with absorbing/scattering medium
+AttributeBegin
+    Translate 1.05 -5.9 0.25
+    MakeNamedMedium "smoke" "string type" "homogeneous"
+        "rgb sigma_a" [0.25 0.25 0.25]
+        "rgb sigma_s" [4.75 4.75 4.75]
+        "float g" 0.3
+    MediumInterface "" "smoke"
+    Material "dielectric" "float eta" 1.0
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# ==========================================================================
+# Row 2 (y=-5.2): Emissive White, Cloud, Coffee, Thin Glass
+# ==========================================================================
+
+# (2,1) Emissive White - area light Le=(4,4,4)
+AttributeBegin
+    Translate -1.05 -5.2 0.25
+    AreaLightSource "diffuse" "rgb L" [4 4 4]
+    Material "diffuse" "rgb reflectance" [0 0 0]
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (2,2) Cloud - homogeneous medium approximation (GridMedium not portable to pbrt)
+AttributeBegin
+    Translate -0.35 -5.2 0.25
+    MakeNamedMedium "cloud" "string type" "homogeneous"
+        "rgb sigma_a" [0.5 0.5 0.5]
+        "rgb sigma_s" [15.0 15.0 15.0]
+    MediumInterface "" "cloud"
+    Material "dielectric" "float eta" 1.0
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (2,3) Coffee - dielectric with coffee-colored scattering medium
+AttributeBegin
+    Translate 0.35 -5.2 0.25
+    MakeNamedMedium "coffee" "string type" "homogeneous"
+        "rgb sigma_a" [2.4 3.29 4.425]
+        "rgb sigma_s" [0.36 0.425 0.51]
+    MediumInterface "" "coffee"
+    Material "dielectric" "float eta" 1.5
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (2,4) Thin Glass - thin dielectric eta=1.5
+AttributeBegin
+    Translate 1.05 -5.2 0.25
+    Material "thindielectric" "float eta" 1.5
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# ==========================================================================
+# Row 3 (y=-4.5): Textured Gold, Silver, Copper, Mirror
+# ==========================================================================
+
+# (3,1) Textured Gold - conductor with Au spectra (no roughness texture in pbrt, use average)
+AttributeBegin
+    Translate -1.05 -4.5 0.25
+    Material "conductor" "float roughness" 0.05
+        "rgb eta" [0.143 0.374 1.442] "rgb k" [3.983 2.385 1.603]
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (3,2) Silver - conductor with Ag spectra, roughness=0.02
+AttributeBegin
+    Translate -0.35 -4.5 0.25
+    Material "conductor" "float roughness" 0.02
+        "spectrum eta" "metal-Ag-eta" "spectrum k" "metal-Ag-k"
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (3,3) Copper - conductor with Cu spectra, roughness=0.08
+AttributeBegin
+    Translate 0.35 -4.5 0.25
+    Material "conductor" "float roughness" 0.08
+        "spectrum eta" "metal-Cu-eta" "spectrum k" "metal-Cu-k"
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (3,4) Mirror - perfect conductor, roughness=0
+AttributeBegin
+    Translate 1.05 -4.5 0.25
+    Material "conductor" "float roughness" 0 "rgb reflectance" [0.95 0.95 0.95]
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# ==========================================================================
+# Row 4 (y=-3.8): Coated Gold, Car Paint, Coated Blue, Plastic White
+# ==========================================================================
+
+# (4,1) Coated Gold - coated conductor with Au spectra
+AttributeBegin
+    Translate -1.05 -3.8 0.25
+    Material "coatedconductor"
+        "float interface.roughness" 0.05
+        "float conductor.roughness" 0.01
+        "spectrum conductor.eta" "metal-Au-eta"
+        "spectrum conductor.k" "metal-Au-k"
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (4,2) Car Paint - coated conductor, red reflectance
+AttributeBegin
+    Translate -0.35 -3.8 0.25
+    Material "coatedconductor"
+        "float interface.roughness" 0.08
+        "float conductor.roughness" 0.01
+        "rgb reflectance" [0.85 0.1 0.1]
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (4,3) Coated Blue - coated diffuse
+AttributeBegin
+    Translate 0.35 -3.8 0.25
+    Material "coateddiffuse" "rgb reflectance" [0.1 0.2 0.7] "float roughness" 0.05
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (4,4) Plastic White - coated diffuse, high roughness
+AttributeBegin
+    Translate 1.05 -3.8 0.25
+    Material "coateddiffuse" "rgb reflectance" [0.9 0.9 0.9] "float roughness" 0.15
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# ==========================================================================
+# Row 5 (back, y=-3.1): Emissive Warm, Paper, Diffuse Gray, Emissive Pattern
+# ==========================================================================
+
+# (5,1) Emissive Warm - area light Le=(2.0, 1.2, 0.5)
+AttributeBegin
+    Translate -1.05 -3.1 0.25
+    AreaLightSource "diffuse" "rgb L" [2.0 1.2 0.5]
+    Material "diffuse" "rgb reflectance" [0 0 0]
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (5,2) Paper - diffuse transmission
+AttributeBegin
+    Translate -0.35 -3.1 0.25
+    Material "diffusetransmission"
+        "rgb reflectance" [0.85 0.85 0.85]
+        "rgb transmittance" [0.4 0.4 0.4]
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (5,3) Diffuse Gray
+AttributeBegin
+    Translate 0.35 -3.1 0.25
+    Material "diffuse" "rgb reflectance" [0.6 0.6 0.6]
+    Shape "sphere" "float radius" 0.25
+AttributeEnd
+
+# (5,4) Textured Emissive - area light (no texture in pbrt, use average color)
+AttributeBegin
+    Translate 1.05 -3.1 0.25
+    AreaLightSource "diffuse" "rgb L" [1.5 0.3 1.2]
+    Material "diffuse" "rgb reflectance" [0 0 0]
+    Shape "sphere" "float radius" 0.25
+AttributeEnd

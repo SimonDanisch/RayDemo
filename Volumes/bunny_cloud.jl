@@ -8,8 +8,9 @@ using GeometryBasics
 _RotX(θ) = Mat3f(1, 0, 0, 0, cos(θ), -sin(θ), 0, sin(θ), cos(θ))
 _RotZ(θ) = Mat3f(cos(θ), -sin(θ), 0, sin(θ), cos(θ), 0, 0, 0, 1)
 
-function create_nanovdb_bunny_scene_direct(nvdb_path::String;
+function create_scene(;
     resolution=(800, 600),
+    nvdb_path::String=joinpath(@__DIR__, "bunny_cloud.nvdb"),
     sigma_s=10.0f0,
     sigma_a=0.5f0,
     g=0.0f0,
@@ -72,22 +73,21 @@ function create_nanovdb_bunny_scene_direct(nvdb_path::String;
     return s
 end
 
-nvdb_path = joinpath(@__DIR__, "bunny_cloud.nvdb")
-
 function render_scene(;
     device=DEVICE,
     resolution=(1920, 1080),
     samples=5,
     max_depth=50,
-    output_path=joinpath(@__DIR__, "bunny_cloud.png"),
+    output_path=joinpath(@__DIR__, "output", "bunny_cloud.png"),
 )
-    scene = create_nanovdb_bunny_scene_direct(nvdb_path; resolution=resolution)
+    scene = create_scene(; resolution=resolution)
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth)
     sensor = Hikari.FilmSensor(iso=50f0, white_balance=5000)
     @time img = colorbuffer(scene;
         device=device, integrator=integrator,
         exposure=0.5, tonemap=nothing, gamma=2.2f0, sensor=sensor,
     )
+    mkpath(dirname(output_path))
     save(output_path, img)
     @info "Saved → $output_path"
     return img
