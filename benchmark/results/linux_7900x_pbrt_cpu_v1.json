@@ -11,7 +11,8 @@
         "n_warmup": 1,
         "n_trials": 3,
         "timestamp": "2026-03-20 16:33:17",
-        "cpu_threads": 24
+        "cpu_threads": 24,
+        "version": "v1"
     },
     "scenes": {
         "crown": {

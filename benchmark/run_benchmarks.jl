@@ -347,10 +347,17 @@ function run_julia_benchmarks(;
     scenes::Vector{String} = collect(keys(BENCHMARK_SCENES)),
     n_warmup::Int = 1,
     n_trials::Int = 3,
+    version::String = "v1",
+    force::Bool = false,
     output_dir::String = BENCHMARK_RESULTS_DIR,
 )
     mkpath(output_dir)
     device_name = device_name_for_backend(backend_name, gpu_name, cpu_name)
+    prefix = "$(platform)_$(device_name)_$(backend_name)"
+
+    if should_skip(output_dir, prefix, version; force)
+        return nothing
+    end
 
     results = OrderedDict{String, Any}()
     results["metadata"] = OrderedDict(
@@ -359,6 +366,7 @@ function run_julia_benchmarks(;
         "cpu_name" => cpu_name,
         "device_name" => device_name,
         "backend_name" => backend_name,
+        "version" => version,
         "renderer" => "raymakie",
         "hw_accel" => hw_accel,
         "n_warmup" => n_warmup,
@@ -468,7 +476,7 @@ function run_julia_benchmarks(;
         end
     end
 
-    json_path = joinpath(output_dir, "$(platform)_$(device_name)_$(backend_name).json")
+    json_path = joinpath(output_dir, result_filename(prefix, version))
     open(json_path, "w") do io
         JSON3.pretty(io, results)
     end
@@ -495,6 +503,8 @@ function run_pbrt_benchmarks(;
     scenes::Vector{String} = collect(keys(BENCHMARK_SCENES)),
     n_warmup::Int = 1,
     n_trials::Int = 3,
+    version::String = "v1",
+    force::Bool = false,
     output_dir::String = BENCHMARK_RESULTS_DIR,
 )
     mkpath(output_dir)
@@ -502,6 +512,11 @@ function run_pbrt_benchmarks(;
 
     backend_name = "pbrt_$(pbrt_mode)"
     device_name = device_name_for_backend(backend_name, gpu_name, cpu_name)
+    prefix = "$(platform)_$(device_name)_$(backend_name)"
+
+    if should_skip(output_dir, prefix, version; force)
+        return nothing
+    end
 
     results = OrderedDict{String, Any}()
     results["metadata"] = OrderedDict(
@@ -510,6 +525,7 @@ function run_pbrt_benchmarks(;
         "cpu_name" => cpu_name,
         "device_name" => device_name,
         "backend_name" => backend_name,
+        "version" => version,
         "renderer" => "pbrt-v4",
         "pbrt_mode" => pbrt_mode,
         "pbrt_binary" => pbrt_binary,
@@ -588,7 +604,7 @@ function run_pbrt_benchmarks(;
         end
     end
 
-    json_path = joinpath(output_dir, "$(platform)_$(device_name)_$(backend_name).json")
+    json_path = joinpath(output_dir, result_filename(prefix, version))
     open(json_path, "w") do io
         JSON3.pretty(io, results)
     end
@@ -614,9 +630,11 @@ function run_all_benchmarks(;
     n_warmup::Int = 1,
     n_trials::Int = 3,
     ak_n::Int = 10_000_000,
+    version::String = "v1",
+    force::Bool = false,
 )
     # Run render benchmarks
-    render_results = run_all_render_benchmarks(; scenes, n_warmup, n_trials)
+    render_results = run_all_render_benchmarks(; scenes, n_warmup, n_trials, version, force)
 
     # Run AK benchmarks
     platform, gpu_name, cpu_name = detect_system()
@@ -625,7 +643,7 @@ function run_all_benchmarks(;
     println("#"^60)
     try
         include(joinpath(@__DIR__, "run_ak_benchmarks.jl"))
-        Base.invokelatest(run_ak_benchmarks; n=ak_n, platform, gpu_name, cpu_name)
+        Base.invokelatest(run_ak_benchmarks; n=ak_n, platform, gpu_name, cpu_name, version, force)
     catch e
         @warn "AK benchmarks failed" exception=(e, catch_backtrace())
     end
@@ -643,6 +661,8 @@ function run_all_render_benchmarks(;
     scenes::Vector{String} = collect(keys(BENCHMARK_SCENES)),
     n_warmup::Int = 1,
     n_trials::Int = 3,
+    version::String = "v1",
+    force::Bool = false,
 )
     backends = detect_backends()
     if isempty(backends)
@@ -669,14 +689,16 @@ function run_all_render_benchmarks(;
                 r = run_pbrt_benchmarks(;
                     pbrt_binary=config.pbrt_binary,
                     pbrt_mode=mode,
-                    platform, gpu_name, cpu_name, scenes, n_warmup, n_trials)
+                    platform, gpu_name, cpu_name, scenes, n_warmup, n_trials,
+                    version, force)
                 all_results[name] = r
             else
                 r = run_julia_benchmarks(;
                     backend=config.backend,
                     backend_name=name,
                     hw_accel=config.hw_accel,
-                    platform, gpu_name, cpu_name, scenes, n_warmup, n_trials)
+                    platform, gpu_name, cpu_name, scenes, n_warmup, n_trials,
+                    version, force)
                 all_results[name] = r
             end
         catch e
@@ -709,6 +731,29 @@ end
 # =============================================================================
 # Utilities
 # =============================================================================
+
+"""
+    result_filename(prefix, version) -> String
+
+Build result filename: `{prefix}_{version}.json`
+"""
+result_filename(prefix, version) = "$(prefix)_$(version).json"
+
+"""
+    should_skip(output_dir, prefix, version; force) -> Bool
+
+Returns true if we should SKIP this benchmark (result exists and not forced).
+"""
+function should_skip(output_dir, prefix, version; force::Bool)
+    path = joinpath(output_dir, result_filename(prefix, version))
+    isfile(path) || return false
+    if force
+        println("  Overwriting: $(basename(path))")
+        return false
+    end
+    println("  Skipping (exists): $(basename(path))")
+    return true
+end
 
 function _median(sorted::Vector{Float64})
     n = length(sorted)

@@ -208,6 +208,8 @@ function run_ak_benchmarks(;
     platform::String = detect_platform(),
     gpu_name::String = detect_gpu_name(),
     cpu_name::String = detect_cpu_name(),
+    version::String = "v1",
+    force::Bool = false,
 )
     mkpath(AK_RESULTS_DIR)
 
@@ -216,6 +218,7 @@ function run_ak_benchmarks(;
     end
 
     all_results = OrderedDict{String, Any}()
+    n_short = n >= 1_000_000 ? "$(div(n, 1_000_000))m" : "$(div(n, 1_000))k"
 
     for (name, AT, sync_fn) in backends
         println("\n" * "#"^60)
@@ -224,6 +227,11 @@ function run_ak_benchmarks(;
 
         # CPU backends use cpu_name, GPU backends use gpu_name
         device_name = name in ("cpu", "abacus") ? cpu_name : gpu_name
+        prefix = "$(platform)_$(device_name)_ak_$(n_short)_$(name)"
+
+        if should_skip(AK_RESULTS_DIR, prefix, version; force)
+            continue
+        end
 
         rng = StableRNG(123)
         try
@@ -237,6 +245,7 @@ function run_ak_benchmarks(;
                 "device_name" => device_name,
                 "backend" => name,
                 "n_elements" => n,
+                "version" => version,
                 "timestamp" => Dates.format(now(), "yyyy-mm-dd HH:MM:SS"),
                 "julia_version" => string(VERSION),
                 "cpu_threads" => Sys.CPU_THREADS,
@@ -245,8 +254,7 @@ function run_ak_benchmarks(;
 
             all_results[name] = results
 
-            n_short = n >= 1_000_000 ? "$(div(n, 1_000_000))m" : "$(div(n, 1_000))k"
-            json_path = joinpath(AK_RESULTS_DIR, "$(platform)_$(device_name)_ak_$(n_short)_$(name).json")
+            json_path = joinpath(AK_RESULTS_DIR, result_filename(prefix, version))
             open(json_path, "w") do io
                 JSON3.pretty(io, results)
             end

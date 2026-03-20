@@ -8,7 +8,8 @@
         "n_elements": 10000000,
         "timestamp": "2026-03-20 17:09:04",
         "julia_version": "1.12.5",
-        "cpu_threads": 24
+        "cpu_threads": 24,
+        "version": "v1"
     },
     "benchmarks": {
         "sort/UInt32/acck": {

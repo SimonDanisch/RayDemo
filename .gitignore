@@ -13,4 +13,3 @@ all_renders/
 
 # Benchmark render images (large PNGs)
 benchmark/results/renders/
-benchmark/results/plots/

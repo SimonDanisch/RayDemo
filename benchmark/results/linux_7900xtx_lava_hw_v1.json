@@ -11,7 +11,8 @@
         "n_trials": 3,
         "timestamp": "2026-03-20 16:19:24",
         "julia_version": "1.12.5",
-        "cpu_threads": 24
+        "cpu_threads": 24,
+        "version": "v1"
     },
     "scenes": {
         "crown": {
