@@ -1,0 +1,128 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "7900xtx",
+        "cpu_name": "7900x",
+        "device_name": "7900xtx",
+        "backend": "lava",
+        "n_elements": 100000000,
+        "timestamp": "2026-03-20 17:06:24",
+        "julia_version": "1.12.5",
+        "cpu_threads": 24
+    },
+    "benchmarks": {
+        "sort/UInt32/acck": {
+            "median_ms": 137.949,
+            "min_ms": 129.84,
+            "timings_ms": [
+                137.949,
+                139.116,
+                129.84
+            ]
+        },
+        "sort/Float32/acck": {
+            "median_ms": 148.197,
+            "min_ms": 138.562,
+            "timings_ms": [
+                148.197,
+                148.626,
+                138.562
+            ]
+        },
+        "reduce/UInt32/acck": {
+            "median_ms": 0.916,
+            "min_ms": 0.915,
+            "timings_ms": [
+                1.006,
+                0.916,
+                0.915,
+                0.915,
+                0.919
+            ]
+        },
+        "reduce/Float32/acck": {
+            "median_ms": 0.917,
+            "min_ms": 0.916,
+            "timings_ms": [
+                1.009,
+                0.916,
+                0.916,
+                0.917,
+                0.924
+            ]
+        },
+        "accumulate/UInt32/acck": {
+            "median_ms": 12.197,
+            "min_ms": 7.696,
+            "timings_ms": [
+                33.7,
+                9.194,
+                126.788,
+                12.197,
+                7.696
+            ]
+        },
+        "accumulate/Float32/acck": {
+            "median_ms": 7.517,
+            "min_ms": 7.114,
+            "timings_ms": [
+                33.711,
+                8.978,
+                7.517,
+                7.128,
+                7.114
+            ]
+        },
+        "map/Float32/acck_2x": {
+            "median_ms": 1.359,
+            "min_ms": 1.348,
+            "timings_ms": [
+                160.567,
+                1.39,
+                1.354,
+                1.359,
+                1.348
+            ]
+        },
+        "map/Float32/acck_sin": {
+            "median_ms": 1.364,
+            "min_ms": 1.303,
+            "timings_ms": [
+                1.585,
+                1.364,
+                1.512,
+                1.363,
+                1.303
+            ]
+        },
+        "mapreduce/Float32/acck_sin": {
+            "median_ms": 1.06,
+            "min_ms": 1.019,
+            "timings_ms": [
+                1.109,
+                1.031,
+                1.06,
+                1.086,
+                1.019
+            ]
+        },
+        "sortperm/UInt32/acck": {
+            "median_ms": 309.652,
+            "min_ms": 308.458,
+            "timings_ms": [
+                308.458,
+                318.306,
+                309.652
+            ]
+        },
+        "sortperm/Float32/acck": {
+            "median_ms": 312.085,
+            "min_ms": 311.822,
+            "timings_ms": [
+                316.59,
+                311.822,
+                312.085
+            ]
+        }
+    }
+}

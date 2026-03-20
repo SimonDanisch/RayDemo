@@ -245,7 +245,8 @@ function run_ak_benchmarks(;
 
             all_results[name] = results
 
-            json_path = joinpath(AK_RESULTS_DIR, "$(platform)_$(device_name)_ak_$(name).json")
+            n_short = n >= 1_000_000 ? "$(div(n, 1_000_000))m" : "$(div(n, 1_000))k"
+            json_path = joinpath(AK_RESULTS_DIR, "$(platform)_$(device_name)_ak_$(n_short)_$(name).json")
             open(json_path, "w") do io
                 JSON3.pretty(io, results)
             end
