@@ -1,0 +1,190 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "7900xtx",
+        "cpu_name": "7900x",
+        "device_name": "7900x",
+        "backend": "cpu",
+        "n_elements": 10000000,
+        "timestamp": "2026-03-20 16:37:27",
+        "julia_version": "1.12.5",
+        "cpu_threads": 24
+    },
+    "benchmarks": {
+        "sort/UInt32/acck": {
+            "median_ms": 47.429,
+            "min_ms": 29.834,
+            "timings_ms": [
+                47.429,
+                77.806,
+                29.834
+            ]
+        },
+        "sort/UInt32/base": {
+            "median_ms": 55.766,
+            "min_ms": 54.879,
+            "timings_ms": [
+                54.879,
+                55.766,
+                61.233
+            ]
+        },
+        "sort/Float32/acck": {
+            "median_ms": 35.61,
+            "min_ms": 34.872,
+            "timings_ms": [
+                35.61,
+                39.36,
+                34.872
+            ]
+        },
+        "sort/Float32/base": {
+            "median_ms": 70.941,
+            "min_ms": 66.878,
+            "timings_ms": [
+                125.048,
+                66.878,
+                70.941
+            ]
+        },
+        "reduce/UInt32/acck": {
+            "median_ms": 0.431,
+            "min_ms": 0.281,
+            "timings_ms": [
+                0.465,
+                0.431,
+                0.281,
+                0.301,
+                0.487
+            ]
+        },
+        "reduce/UInt32/base": {
+            "median_ms": 14.409,
+            "min_ms": 14.168,
+            "timings_ms": [
+                65.444,
+                14.409,
+                76.158,
+                14.168,
+                14.303
+            ]
+        },
+        "reduce/Float32/acck": {
+            "median_ms": 0.481,
+            "min_ms": 0.474,
+            "timings_ms": [
+                0.709,
+                0.529,
+                0.474,
+                0.479,
+                0.481
+            ]
+        },
+        "reduce/Float32/base": {
+            "median_ms": 19.053,
+            "min_ms": 18.178,
+            "timings_ms": [
+                19.053,
+                18.369,
+                31.779,
+                18.178,
+                22.378
+            ]
+        },
+        "accumulate/UInt32/acck": {
+            "median_ms": 15.089,
+            "min_ms": 14.739,
+            "timings_ms": [
+                31.863,
+                15.089,
+                14.739,
+                64.236,
+                14.975
+            ]
+        },
+        "accumulate/UInt32/base": {
+            "median_ms": 25.884,
+            "min_ms": 25.285,
+            "timings_ms": [
+                25.884,
+                79.45,
+                25.41,
+                84.008,
+                25.285
+            ]
+        },
+        "accumulate/Float32/acck": {
+            "median_ms": 16.297,
+            "min_ms": 14.568,
+            "timings_ms": [
+                31.069,
+                14.568,
+                15.109,
+                16.297,
+                32.294
+            ]
+        },
+        "accumulate/Float32/base": {
+            "median_ms": 38.305,
+            "min_ms": 28.305,
+            "timings_ms": [
+                87.32,
+                88.706,
+                28.783,
+                38.305,
+                28.305
+            ]
+        },
+        "map/Float32/acck_2x": {
+            "median_ms": 1.348,
+            "min_ms": 1.143,
+            "timings_ms": [
+                38.669,
+                1.763,
+                1.348,
+                1.323,
+                1.143
+            ]
+        },
+        "map/Float32/acck_sin": {
+            "median_ms": 3.762,
+            "min_ms": 3.418,
+            "timings_ms": [
+                3.418,
+                3.91,
+                3.51,
+                3.762,
+                4.144
+            ]
+        },
+        "mapreduce/Float32/acck_sin": {
+            "median_ms": 4.135,
+            "min_ms": 3.81,
+            "timings_ms": [
+                4.099,
+                3.81,
+                4.161,
+                4.226,
+                4.135
+            ]
+        },
+        "sortperm/UInt32/acck": {
+            "median_ms": 143.202,
+            "min_ms": 92.978,
+            "timings_ms": [
+                92.978,
+                166.467,
+                143.202
+            ]
+        },
+        "sortperm/Float32/acck": {
+            "median_ms": 162.432,
+            "min_ms": 160.292,
+            "timings_ms": [
+                162.432,
+                185.324,
+                160.292
+            ]
+        }
+    }
+}

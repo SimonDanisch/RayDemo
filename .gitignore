@@ -11,5 +11,6 @@ all_renders/
 # Per-scene render outputs
 **/output/
 
-# Benchmark results (machine-specific)
-benchmark/results/
+# Benchmark render images (large PNGs)
+benchmark/results/renders/
+benchmark/results/plots/

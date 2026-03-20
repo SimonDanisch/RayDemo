@@ -1,0 +1,70 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "7900xtx",
+        "cpu_name": "7900x",
+        "device_name": "7900x",
+        "backend_name": "pbrt_cpu",
+        "renderer": "pbrt-v4",
+        "pbrt_mode": "cpu",
+        "pbrt_binary": "/sim/Programmieren/RayTracing/pbrt-v4/build/pbrt",
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-03-20 16:33:17",
+        "cpu_threads": 24
+    },
+    "scenes": {
+        "crown": {
+            "resolution": "native",
+            "samples": 16,
+            "pbrt_mode": "cpu",
+            "timings": [
+                12.317739757,
+                12.46221935,
+                12.473696689
+            ],
+            "median": 12.4622,
+            "min": 12.3177,
+            "max": 12.4737
+        },
+        "bunny_cloud": {
+            "resolution": "native",
+            "samples": 8,
+            "pbrt_mode": "cpu",
+            "timings": [
+                10.133879321,
+                10.278983176,
+                10.173948703
+            ],
+            "median": 10.1739,
+            "min": 10.1339,
+            "max": 10.279
+        },
+        "killeroo_gold": {
+            "resolution": "native",
+            "samples": 32,
+            "pbrt_mode": "cpu",
+            "timings": [
+                7.718764404,
+                7.478993358,
+                7.292263562
+            ],
+            "median": 7.479,
+            "min": 7.2923,
+            "max": 7.7188
+        },
+        "materials": {
+            "resolution": "native",
+            "samples": 10,
+            "pbrt_mode": "cpu",
+            "timings": [
+                3.470580275,
+                3.44591113,
+                3.464806757
+            ],
+            "median": 3.4648,
+            "min": 3.4459,
+            "max": 3.4706
+        }
+    }
+}

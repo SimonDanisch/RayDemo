@@ -80,36 +80,162 @@ const BENCHMARK_SCENES = OrderedDict(
 # System Detection
 # =============================================================================
 
-"""Return (hostname, gpu_name) for result file naming."""
-function detect_system()
-    hostname = strip(read(`hostname`, String))
-    gpu_name = "unknown_gpu"
+"""
+    detect_platform() -> String
 
+Return OS name for result file naming: "linux", "macos", or "windows".
+"""
+function detect_platform()
+    Sys.islinux() && return "linux"
+    Sys.isapple() && return "macos"
+    Sys.iswindows() && return "windows"
+    return "unknown"
+end
+
+# Common GPU name patterns → short names
+const GPU_SHORT_NAMES = [
+    r"7900\s*xtx"i => "7900xtx",
+    r"7900\s*xt\b"i => "7900xt",
+    r"7900\s*gre"i => "7900gre",
+    r"7800\s*xt"i => "7800xt",
+    r"7600\s*xt"i => "7600xt",
+    r"rtx\s*4090"i => "rtx4090",
+    r"rtx\s*4080"i => "rtx4080",
+    r"rtx\s*4070"i => "rtx4070",
+    r"rtx\s*3090"i => "rtx3090",
+    r"rtx\s*3080"i => "rtx3080",
+    r"rtx\s*3070"i => "rtx3070",
+    r"rtx\s*5090"i => "rtx5090",
+    r"rtx\s*5080"i => "rtx5080",
+    r"rtx\s*5070"i => "rtx5070",
+    r"m4\s*ultra"i => "m4ultra",
+    r"m4\s*max"i => "m4max",
+    r"m4\s*pro"i => "m4pro",
+    r"m3\s*ultra"i => "m3ultra",
+    r"m3\s*max"i => "m3max",
+    r"m3\s*pro"i => "m3pro",
+    r"m2\s*ultra"i => "m2ultra",
+    r"m2\s*max"i => "m2max",
+    r"m2\s*pro"i => "m2pro",
+    r"arc\s*a770"i => "a770",
+    r"arc\s*b580"i => "b580",
+]
+
+# Common GPU name patterns → short names
+const CPU_SHORT_NAMES = [
+    r"7950x3d"i => "7950x3d",
+    r"7950x"i => "7950x",
+    r"7900x3d"i => "7900x3d",
+    r"7900x"i => "7900x",
+    r"7800x3d"i => "7800x3d",
+    r"7700x"i => "7700x",
+    r"9950x3d"i => "9950x3d",
+    r"9950x"i => "9950x",
+    r"9900x"i => "9900x",
+    r"9800x3d"i => "9800x3d",
+    r"13900k"i => "13900k",
+    r"14900k"i => "14900k",
+    r"i9.?13900"i => "13900",
+    r"i9.?14900"i => "14900",
+    r"i7.?13700"i => "13700",
+    r"i7.?14700"i => "14700",
+    r"m4\s*ultra"i => "m4ultra",
+    r"m4\s*max"i => "m4max",
+    r"m4\s*pro"i => "m4pro",
+    r"m3\s*ultra"i => "m3ultra",
+    r"m3\s*max"i => "m3max",
+    r"m3\s*pro"i => "m3pro",
+]
+
+"""
+    shorten_device_name(full_name, patterns) -> String
+
+Map a full device name to a short identifier for filenames.
+"""
+function shorten_device_name(full_name::AbstractString, patterns)
+    for (pat, short) in patterns
+        occursin(pat, full_name) && return short
+    end
+    # Fallback: sanitize the full name
+    short = replace(lowercase(full_name), r"[^a-z0-9]+" => "_")
+    short = strip(short, '_')
+    # Trim common prefixes
+    for prefix in ["amd_radeon_rx_", "amd_radeon_", "nvidia_geforce_", "nvidia_",
+                    "intel_arc_", "apple_", "amd_ryzen_9_", "amd_ryzen_7_",
+                    "amd_ryzen_5_", "intel_core_"]
+        startswith(short, prefix) && (short = short[length(prefix)+1:end])
+    end
+    # Trim trailing qualifiers like "_12_core_processor"
+    short = replace(short, r"_\d+_core_processor$" => "")
+    return String(short)
+end
+
+"""
+    detect_gpu_name() -> String
+
+Detect the GPU and return a short name for filenames.
+"""
+function detect_gpu_name()
     # Try Lava context first (most reliable when loaded)
     try
-        gpu_name = Main.Lava.vk_context().device_name
+        return shorten_device_name(Main.Lava.vk_context().device_name, GPU_SHORT_NAMES)
     catch; end
 
     # Try NVIDIA
-    if gpu_name == "unknown_gpu"
-        try
-            gpu_name = strip(read(`nvidia-smi --query-gpu=name --format=csv,noheader`, String))
-        catch; end
-    end
+    try
+        full = strip(read(`nvidia-smi --query-gpu=name --format=csv,noheader`, String))
+        return shorten_device_name(full, GPU_SHORT_NAMES)
+    catch; end
 
     # Try vulkaninfo
-    if gpu_name == "unknown_gpu"
-        try
-            info = read(pipeline(`vulkaninfo --summary`, stderr=devnull), String)
-            m = match(r"deviceName\s*=\s*(.*)", info)
-            m !== nothing && (gpu_name = strip(m.captures[1]))
-        catch; end
-    end
+    try
+        info = read(pipeline(`vulkaninfo --summary`, stderr=devnull), String)
+        m = match(r"deviceName\s*=\s*(.*)", info)
+        m !== nothing && return shorten_device_name(strip(m.captures[1]), GPU_SHORT_NAMES)
+    catch; end
 
-    # Sanitize for filename
-    gpu_name = replace(lowercase(gpu_name), r"[^a-z0-9]+" => "_")
-    gpu_name = strip(gpu_name, '_')
-    return String(hostname), String(gpu_name)
+    return "unknown_gpu"
+end
+
+"""
+    detect_cpu_name() -> String
+
+Detect the CPU and return a short name for filenames.
+"""
+function detect_cpu_name()
+    try
+        cpuinfo = read("/proc/cpuinfo", String)
+        m = match(r"model name\s*:\s*(.*)", cpuinfo)
+        m !== nothing && return shorten_device_name(strip(m.captures[1]), CPU_SHORT_NAMES)
+    catch; end
+    # macOS
+    try
+        full = strip(read(`sysctl -n machdep.cpu.brand_string`, String))
+        return shorten_device_name(full, CPU_SHORT_NAMES)
+    catch; end
+    return "unknown_cpu"
+end
+
+"""
+    detect_system() -> (platform, gpu_name, cpu_name)
+
+Return (platform, gpu_short_name, cpu_short_name) for result file naming.
+E.g. ("linux", "7900xtx", "7900x")
+"""
+function detect_system()
+    return detect_platform(), detect_gpu_name(), detect_cpu_name()
+end
+
+"""
+    device_name_for_backend(backend_name, gpu_name, cpu_name) -> String
+
+Return the appropriate device name for a backend.
+GPU backends use gpu_name, CPU backends use cpu_name.
+"""
+function device_name_for_backend(backend_name::String, gpu_name::String, cpu_name::String)
+    # CPU-based backends
+    backend_name in ("pbrt_cpu", "cpu", "abacus") && return cpu_name
+    return gpu_name
 end
 
 """
@@ -215,19 +341,23 @@ function run_julia_benchmarks(;
     backend,
     backend_name::String,
     hw_accel::Bool = false,
-    hostname::String = detect_system()[1],
-    gpu_name::String = detect_system()[2],
+    platform::String = detect_platform(),
+    gpu_name::String = detect_gpu_name(),
+    cpu_name::String = detect_cpu_name(),
     scenes::Vector{String} = collect(keys(BENCHMARK_SCENES)),
     n_warmup::Int = 1,
     n_trials::Int = 3,
     output_dir::String = BENCHMARK_RESULTS_DIR,
 )
     mkpath(output_dir)
+    device_name = device_name_for_backend(backend_name, gpu_name, cpu_name)
 
     results = OrderedDict{String, Any}()
     results["metadata"] = OrderedDict(
-        "hostname" => hostname,
+        "platform" => platform,
         "gpu_name" => gpu_name,
+        "cpu_name" => cpu_name,
+        "device_name" => device_name,
         "backend_name" => backend_name,
         "renderer" => "raymakie",
         "hw_accel" => hw_accel,
@@ -291,11 +421,11 @@ function run_julia_benchmarks(;
             GC.gc(false)
         end
 
-        # Save render to scene output dir
+        # Save render to results/renders/
         try
-            scene_dir = dirname(cfg.script)
-            out_path = joinpath(scene_dir, "output", "$(scene_name)_$(backend_name).png")
-            mkpath(dirname(out_path))
+            renders_dir = joinpath(output_dir, "renders")
+            mkpath(renders_dir)
+            out_path = joinpath(renders_dir, "$(scene_name)_$(backend_name).png")
             Base.invokelatest(FileIO.save, out_path, img)
         catch; end
 
@@ -338,7 +468,7 @@ function run_julia_benchmarks(;
         end
     end
 
-    json_path = joinpath(output_dir, "$(hostname)_$(gpu_name)_$(backend_name).json")
+    json_path = joinpath(output_dir, "$(platform)_$(device_name)_$(backend_name).json")
     open(json_path, "w") do io
         JSON3.pretty(io, results)
     end
@@ -359,8 +489,9 @@ Benchmark pbrt-v4 on scenes that have .pbrt files.
 function run_pbrt_benchmarks(;
     pbrt_binary::String = "/sim/Programmieren/RayTracing/pbrt-v4/build/pbrt",
     pbrt_mode::String = "cpu",  # "cpu" or "gpu"
-    hostname::String = detect_system()[1],
-    gpu_name::String = detect_system()[2],
+    platform::String = detect_platform(),
+    gpu_name::String = detect_gpu_name(),
+    cpu_name::String = detect_cpu_name(),
     scenes::Vector{String} = collect(keys(BENCHMARK_SCENES)),
     n_warmup::Int = 1,
     n_trials::Int = 3,
@@ -370,11 +501,14 @@ function run_pbrt_benchmarks(;
     isfile(pbrt_binary) || error("pbrt-v4 not found at $pbrt_binary. Set PBRT_PATH env var or pass pbrt_binary kwarg.")
 
     backend_name = "pbrt_$(pbrt_mode)"
+    device_name = device_name_for_backend(backend_name, gpu_name, cpu_name)
 
     results = OrderedDict{String, Any}()
     results["metadata"] = OrderedDict(
-        "hostname" => hostname,
+        "platform" => platform,
         "gpu_name" => gpu_name,
+        "cpu_name" => cpu_name,
+        "device_name" => device_name,
         "backend_name" => backend_name,
         "renderer" => "pbrt-v4",
         "pbrt_mode" => pbrt_mode,
@@ -454,7 +588,7 @@ function run_pbrt_benchmarks(;
         end
     end
 
-    json_path = joinpath(output_dir, "$(hostname)_$(gpu_name)_$(backend_name).json")
+    json_path = joinpath(output_dir, "$(platform)_$(device_name)_$(backend_name).json")
     open(json_path, "w") do io
         JSON3.pretty(io, results)
     end
@@ -467,12 +601,45 @@ end
 # =============================================================================
 
 """
-    run_all_benchmarks(; scenes, n_warmup, n_trials)
+    run_all_benchmarks(; scenes, n_warmup, n_trials, ak_n)
 
-Auto-detect all available backends and run benchmarks on all scenes.
-Results saved as `{hostname}_{gpu}_{backend}.json` in benchmark/results/.
+Auto-detect all available backends and run ALL benchmarks (render + AK).
+Results saved as `{platform}_{gpu}_{backend}.json` in benchmark/results/.
+
+To run only render benchmarks: `run_all_render_benchmarks()`
+To run only AK benchmarks: include run_ak_benchmarks.jl and call `run_ak_benchmarks()`
 """
 function run_all_benchmarks(;
+    scenes::Vector{String} = collect(keys(BENCHMARK_SCENES)),
+    n_warmup::Int = 1,
+    n_trials::Int = 3,
+    ak_n::Int = 10_000_000,
+)
+    # Run render benchmarks
+    render_results = run_all_render_benchmarks(; scenes, n_warmup, n_trials)
+
+    # Run AK benchmarks
+    platform, gpu_name, cpu_name = detect_system()
+    println("\n\n" * "#"^60)
+    println("# AcceleratedKernels Benchmarks ($ak_n elements)")
+    println("#"^60)
+    try
+        include(joinpath(@__DIR__, "run_ak_benchmarks.jl"))
+        Base.invokelatest(run_ak_benchmarks; n=ak_n, platform, gpu_name, cpu_name)
+    catch e
+        @warn "AK benchmarks failed" exception=(e, catch_backtrace())
+    end
+
+    return render_results
+end
+
+"""
+    run_all_render_benchmarks(; scenes, n_warmup, n_trials)
+
+Auto-detect all available backends and run render benchmarks on all scenes.
+Results saved as `{platform}_{gpu}_{backend}.json` in benchmark/results/.
+"""
+function run_all_render_benchmarks(;
     scenes::Vector{String} = collect(keys(BENCHMARK_SCENES)),
     n_warmup::Int = 1,
     n_trials::Int = 3,
@@ -484,8 +651,8 @@ function run_all_benchmarks(;
     end
 
     # Detect system after backends (Lava init provides GPU name)
-    hostname, gpu_name = detect_system()
-    println("System: $hostname / $gpu_name / $(Sys.CPU_THREADS) threads")
+    platform, gpu_name, cpu_name = detect_system()
+    println("System: $platform / GPU=$gpu_name / CPU=$cpu_name / $(Sys.CPU_THREADS) threads")
     println("Detected backends: $(join([b.first for b in backends], ", "))")
     println()
 
@@ -502,14 +669,14 @@ function run_all_benchmarks(;
                 r = run_pbrt_benchmarks(;
                     pbrt_binary=config.pbrt_binary,
                     pbrt_mode=mode,
-                    hostname, gpu_name, scenes, n_warmup, n_trials)
+                    platform, gpu_name, cpu_name, scenes, n_warmup, n_trials)
                 all_results[name] = r
             else
                 r = run_julia_benchmarks(;
                     backend=config.backend,
                     backend_name=name,
                     hw_accel=config.hw_accel,
-                    hostname, gpu_name, scenes, n_warmup, n_trials)
+                    platform, gpu_name, cpu_name, scenes, n_warmup, n_trials)
                 all_results[name] = r
             end
         catch e
@@ -519,7 +686,7 @@ function run_all_benchmarks(;
 
     # Print summary
     println("\n" * "="^70)
-    println("BENCHMARK SUMMARY ($hostname / $gpu_name)")
+    println("BENCHMARK SUMMARY ($platform / GPU=$gpu_name / CPU=$cpu_name)")
     println("="^70)
     println()
     for scene_name in scenes
