@@ -254,13 +254,18 @@ function detect_backends()
         try
             Lava = getfield(Main, :Lava)
             backend = Lava.LavaBackend()
-            push!(backends, "lava_sw" => (; backend, hw_accel=false))
+            # HW RT first: its compiled kernels are shared with SW RT, avoiding
+            # cold-start compilation of large workqueue kernels that can hang
+            # AMD's Windows shader compiler.
+            has_rt = false
             try
                 ctx = Lava.vk_context()
                 if ctx.rt_pipeline_properties !== nothing
                     push!(backends, "lava_hw" => (; backend, hw_accel=true))
+                    has_rt = true
                 end
             catch; end
+            push!(backends, "lava_sw" => (; backend, hw_accel=false))
             @info "Detected: Lava (Vulkan)"
         catch e
             @info "Lava loaded but failed: $(sprint(showerror, e)[1:min(end,80)])"
