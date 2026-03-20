@@ -1,0 +1,71 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "rtx3070",
+        "cpu_name": "5800h_with_radeon_graphics",
+        "device_name": "5800h_with_radeon_graphics",
+        "backend_name": "pbrt_cpu",
+        "version": "v1",
+        "renderer": "pbrt-v4",
+        "pbrt_mode": "cpu",
+        "pbrt_binary": "/home/sim/programmieren/RayDemo/pbrt-v4/build/pbrt",
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-03-20 19:41:29",
+        "cpu_threads": 16
+    },
+    "scenes": {
+        "crown": {
+            "resolution": "native",
+            "samples": 16,
+            "pbrt_mode": "cpu",
+            "timings": [
+                32.111752916,
+                32.056625252,
+                31.925628921
+            ],
+            "median": 32.0566,
+            "min": 31.9256,
+            "max": 32.1118
+        },
+        "bunny_cloud": {
+            "resolution": "native",
+            "samples": 8,
+            "pbrt_mode": "cpu",
+            "timings": [
+                26.954357951,
+                26.813297512,
+                26.826868576
+            ],
+            "median": 26.8269,
+            "min": 26.8133,
+            "max": 26.9544
+        },
+        "killeroo_gold": {
+            "resolution": "native",
+            "samples": 32,
+            "pbrt_mode": "cpu",
+            "timings": [
+                18.741846818,
+                18.790922649,
+                18.72858005
+            ],
+            "median": 18.7418,
+            "min": 18.7286,
+            "max": 18.7909
+        },
+        "materials": {
+            "resolution": "native",
+            "samples": 10,
+            "pbrt_mode": "cpu",
+            "timings": [
+                9.977895867,
+                9.905869305,
+                9.872181822
+            ],
+            "median": 9.9059,
+            "min": 9.8722,
+            "max": 9.9779
+        }
+    }
+}

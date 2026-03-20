@@ -683,6 +683,10 @@ function run_all_render_benchmarks(;
         println("# Backend: $name")
         println("#"^60)
 
+        # Free VRAM from other backends before switching — CUDA's memory pool
+        # can hold ~5GB on an 8GB GPU, causing Vulkan OOM → DEVICE_LOST
+        _release_gpu_memory()
+
         try
             if startswith(name, "pbrt_")
                 mode = name == "pbrt_gpu" ? "gpu" : "cpu"
@@ -753,6 +757,29 @@ function should_skip(output_dir, prefix, version; force::Bool)
     end
     println("  Skipping (exists): $(basename(path))")
     return true
+end
+
+"""
+    _release_gpu_memory()
+
+Free VRAM from other GPU backends before switching.
+CUDA's memory pool can hold ~5GB on an 8GB GPU, starving Vulkan allocations
+and causing DEVICE_LOST on cold compilation. Call between backend switches.
+"""
+function _release_gpu_memory()
+    GC.gc(true)
+    if isdefined(Main, :CUDA)
+        try
+            CUDA = getfield(Main, :CUDA)
+            CUDA.reclaim()
+        catch; end
+    end
+    if isdefined(Main, :AMDGPU)
+        try
+            AMDGPU = getfield(Main, :AMDGPU)
+            AMDGPU.HIP.reclaim()
+        catch; end
+    end
 end
 
 function _median(sorted::Vector{Float64})
