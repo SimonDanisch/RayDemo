@@ -7,8 +7,9 @@ const PARAMS = (
     # Grid parameters
     p=4,                      # Grid resolution exponent (m = 3 * 2^p)
     # Physics
-    Re=3700,                  # Reynolds number
-    U=1,                      # Freestream velocity
+    Re = 3700,                  # Reynolds number
+    U = 1,                      # Freestream velocity
+
     # Timing (in CTU - convective time units)
     time_max=200,            # Total simulation time
     stats_init=100,          # Time to start collecting statistics
@@ -26,9 +27,9 @@ const PARAMS = (
 #==============================================================================#
 
 derived_params(p) = (
-    m=3 * 2^p.p,
-    R=(3 * 2^p.p) ÷ 3,
-    fname_base=joinpath(p.datadir, "p$(p.p)"),
+    m = 3 * 2^p.p,
+    R = (3 * 2^p.p) ÷ 3,
+    fname_base = joinpath(p.datadir, "p$(p.p)"),
 )
 
 # Sphere geometry
