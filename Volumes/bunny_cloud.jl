@@ -94,3 +94,7 @@ function render_scene(;
 end
 
 # render_scene()
+
+scene = create_scene(; resolution=(800, 800))
+sensor = Hikari.FilmSensor(; iso=50, white_balance=5000)
+RayMakie.vulkan_viewer(scene; sensor)

@@ -1,25 +1,3 @@
-# Crown Scene - pbrt-v4 VolPath Example
-# Port of the crown scene from pbrt-v4-scenes with proper area lights and materials.
-#
-# This scene showcases:
-# - MetalMaterial with gold (Au) properties for conductor materials
-# - CoatedDiffuseMaterial for glossy painted surfaces
-# - GlassMaterial for dielectric gems
-# - MatteMaterial for diffuse surfaces
-# - Area lights via Emissive material on meshes (5500K blackbody, scale=10)
-# - DiffuseAreaLight created automatically per emissive triangle
-#
-# pbrt-v4 reference: crown.pbrt — 786 PLY meshes, 6 area light quads, ~3.5M triangles
-#
-# TODO: Load image textures from pbrt-data/textures/ for:
-#   - Mix material masks (e.g. clamp_mask.png for gold/paint blending)
-#   - Diffuse color maps (e.g. mitra_border_color.png)
-#   - Bump maps (e.g. mitra_border_bump.png)
-#   Hikari supports Texture(Matrix{Float32}) and Texture(Matrix{RGBSpectrum}).
-#   The pbrt parser needs to extract "imagemap" texture definitions and load PNGs
-#   via FileIO.load(), then pass them to material constructors.
-#   Texture data is in pbrt-data/textures/ (14MB, already bundled).
-
 include("../common/common.jl")
 using GeometryBasics, StaticArrays, Colors
 
@@ -272,3 +250,28 @@ function render_scene(;
 end
 
 # render_scene()
+scene = create_scene(; resolution=(800, 800).*2);
+sensor = Hikari.FilmSensor(; iso=10, exposure_time=1.0, white_balance=4000)
+screen = RayMakie.vulkan_viewer(scene; sensor)
+
+using Revise, RayMakie, Hikari, Makie, Lava
+begin
+    scene, ax, pl = surface(0 .. 5, 0 .. 5, rand(100, 100); figure=(; size=(2*800, 800)))
+    scatter(scene[1, 2],rand(Point2f, 100), markersize=20, color=rand(100))
+    Makie.update_state_before_display!(scene)
+    sensor = Hikari.FilmSensor(; iso=10, exposure_time=1.0, white_balance=4000)
+    screen = RayMakie.vulkan_viewer(scene; sensor)
+end
+
+begin
+    scene, ax, pl = surface(0 .. 5, 0 .. 5, rand(100, 100); figure=(; size=(2*800, 800)))
+    screen = RayMakie.vulkan_viewer(scene)
+end
+
+
+begin
+    f, ax, pl = scatter(rand(Point2f, 100), markersize=20, color=rand(100))
+    Makie.update_state_before_display!(f)
+    screen = RayMakie.vulkan_viewer(f)
+end
+close(screen)
