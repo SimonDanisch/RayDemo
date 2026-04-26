@@ -416,10 +416,9 @@ function run_julia_benchmarks(;
         end
         println("done.")
 
-        sensor = Base.invokelatest(Hikari.FilmSensor; cfg.sensor_kwargs...)
         integrator = Base.invokelatest(Hikari.VolPath;
             samples=cfg.samples, max_depth=cfg.max_depth, hw_accel=hw_accel)
-        Base.invokelatest(RayMakie.activate!; device=backend, sensor=sensor, cfg.colorbuffer_kwargs...)
+        Base.invokelatest(RayMakie.activate!; device=backend, cfg.colorbuffer_kwargs...)
 
         # Warmup
         println("  Warmup ($n_warmup)...")
@@ -460,6 +459,19 @@ function run_julia_benchmarks(;
                 @warn "  Trial $trial failed" exception=(e, catch_backtrace())
                 break
             end
+        end
+
+        # Clean up GPU resources between scenes to prevent DEVICE_LOST from
+        # accumulated dispatch state. Close integrator + force GC + flush deferred frees.
+        try
+            Base.invokelatest(close, integrator)
+        catch; end
+        GC.gc(true)
+        if isdefined(Main, :Lava)
+            try
+                Main.Lava.vk_flush!()
+                Main.Lava.flush_deferred_frees!()
+            catch; end
         end
 
         if !isempty(timings)

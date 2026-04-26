@@ -3,17 +3,17 @@ using PlantGeom, XPalm, XPalm.VPalm
 import PlantGeom: symbol, descendants
 
 # Materials
-leaf_material = Hikari.CoatedDiffuseTransmissionMaterial(
+leaf_material = Hikari.CoatedDiffuseTransmission(
     reflectance=(0.07f0, 0.15f0, 0.04f0),
     transmittance=(0.03f0, 0.08f0, 0.02f0),
     roughness=0.15f0,   # waxy cuticle (slightly rough for broad highlights)
     eta=1.5f0,           # typical plant cuticle IOR
     thickness=0.01f0
 )
-stem_material = Hikari.CoatedDiffuseMaterial(
+stem_material = Hikari.CoatedDiffuse(
     reflectance=(0.55f0, 0.35f0, 0.2f0), roughness=0.4f0, eta=1.5f0, thickness=0.001f0
 )
-ground_material = Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(0.15f0, 0.12f0, 0.08f0))
+ground_material = Hikari.Diffuse(Kd=Hikari.RGBSpectrum(0.15f0, 0.12f0, 0.08f0))
 
 # Build plant model
 file = joinpath(dirname(dirname(pathof(XPalm))), "test", "references", "vpalm-parameter_file.yml")

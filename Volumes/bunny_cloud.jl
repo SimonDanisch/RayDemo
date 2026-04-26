@@ -40,7 +40,7 @@ function create_scene(;
     s.camera_controls.fov[] = 25.0
 
     # Transparent boundary material
-    transparent = Hikari.GlassMaterial(
+    transparent = Hikari.Dielectric(
         Kr = Hikari.RGBSpectrum(0f0),
         Kt = Hikari.RGBSpectrum(1f0),
         index = 1.0f0
@@ -57,7 +57,7 @@ function create_scene(;
     ground_size = 1000f0
     ground_geo = Rect3f(Vec3f(-ground_size, -ground_size, -0.1f0),
                         Vec3f(2*ground_size, 2*ground_size, 0.2f0))
-    ground_material = Hikari.CoatedDiffuseMaterial(
+    ground_material = Hikari.CoatedDiffuse(
         reflectance = (0.4f0, 0.45f0, 0.35f0),
         roughness = 0f0,
         eta = 1.5f0,
@@ -82,10 +82,9 @@ function render_scene(;
 )
     scene = create_scene(; resolution=resolution)
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth)
-    sensor = Hikari.FilmSensor(iso=50f0, white_balance=5000)
     @time img = colorbuffer(scene;
         device=device, integrator=integrator,
-        exposure=0.5, tonemap=nothing, gamma=2.2f0, sensor=sensor,
+        exposure=0.5, tonemap=nothing, gamma=2.2f0,
     )
     mkpath(dirname(output_path))
     save(output_path, img)
@@ -93,8 +92,7 @@ function render_scene(;
     return img
 end
 
-# render_scene()
-
-scene = create_scene(; resolution=(800, 800))
-sensor = Hikari.FilmSensor(; iso=50, white_balance=5000)
-RayMakie.vulkan_viewer(scene; sensor)
+if abspath(PROGRAM_FILE) == @__FILE__
+    scene = create_scene(; resolution=(1920, 1080))
+    RayMakie.vulkan_viewer(scene)
+end

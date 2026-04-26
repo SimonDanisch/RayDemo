@@ -63,7 +63,7 @@ end
 
 # Water material - physically correct dielectric surface (Fresnel handles reflection split)
 # Kr/Kt = 1: no surface absorption. Water's blue tint is volumetric, not surface.
-water_material = Hikari.GlassMaterial(
+water_material = Hikari.Dielectric(
     Kr=Hikari.RGBSpectrum(1f0, 1f0, 1f0),
     Kt=Hikari.RGBSpectrum(1f0, 1f0, 1f0),
     roughness=0.01f0,
@@ -74,11 +74,7 @@ water_material = Hikari.GlassMaterial(
 ball_material = Hikari.Gold(; roughness=0.01f0)
 
 # Ground plane material - slightly reflective floor
-ground_material = Hikari.PlasticMaterial(
-    Kd=Hikari.RGBSpectrum(0.4f0, 0.4f0, 0.45f0),
-    Ks=Hikari.RGBSpectrum(0.2f0, 0.2f0, 0.2f0),
-    roughness=0.3f0
-)
+ground_material = Hikari.Plastic(color=(0.4f0, 0.4f0, 0.45f0), roughness=0.3f0)
 
 # =============================================================================
 # Scene setup

@@ -162,7 +162,7 @@ function create_scene(; resolution=(684, 513), subdivision_levels=3)
     killeroo_mesh = load_killeroo_mesh(; levels=subdivision_levels)
     println("  $(length(coordinates(killeroo_mesh))) vertices")
 
-    scene = Scene(size=resolution; lights=Makie.AbstractLight[], ambient=RGBf(0.02, 0.02, 0.02))
+    scene = Scene(size=resolution; lights=Makie.AbstractLight[], ambient=RGBf(0, 0, 0))
     cam3d!(scene)
 
     # Camera: LookAt 200 250 70   0 33 -50   0 0 1
@@ -184,8 +184,22 @@ function create_scene(; resolution=(684, 513), subdivision_levels=3)
     mesh!(scene, Rect3f(Vec3f(-ground_size, -ground_size, ground_z),
                         Vec3f(0.2f0, 2*ground_size, 1000f0)); material=ground_material)
 
-    # Lights
-    push_light!(scene, Makie.PointLight(RGBf(5000, 5000, 5000), Vec3f(0, 0, 800)))
+    # Area light: disk at z=800, radius 150, matching pbrt scene
+    # (emissive mesh, not a point light)
+    disk_mesh = Hikari.tessellate_disk(150f0; segments=64)
+    # Flip normals so disk emits downward (pbrt uses ReverseOrientation)
+    disk_positions = collect(GeometryBasics.coordinates(disk_mesh))
+    disk_faces = [GeometryBasics.TriangleFace{Int}(f[1], f[3], f[2])
+                  for f in GeometryBasics.faces(disk_mesh)]
+    disk_mesh = GeometryBasics.Mesh(disk_positions, disk_faces)
+    # Translate to z=800
+    disk_positions_translated = [p + Vec3f(0, 0, 800) for p in GeometryBasics.coordinates(disk_mesh)]
+    disk_mesh = GeometryBasics.Mesh(disk_positions_translated, collect(GeometryBasics.faces(disk_mesh)))
+    emissive = Hikari.Emissive(Le=(50f0, 50f0, 50f0), scale=1f0, two_sided=false)
+    mesh!(scene, disk_mesh; material=Hikari.MediumInterface(
+        Hikari.Diffuse(Kd=(0f0, 0f0, 0f0)); emission=emissive))
+
+    # Distant fill light (camera-relative in pbrt, we approximate with fixed direction)
     push_light!(scene, Makie.DirectionalLight(RGBf(0.2, 0.2, 0.2), Vec3f(-200, -250, -70)))
 
     return scene
@@ -205,8 +219,7 @@ function render_scene(;
 )
     scene = create_scene(; resolution=resolution)
     GC.gc(true)
-    sensor = Hikari.FilmSensor(; iso=100, white_balance=5500)
-    RayMakie.activate!(; device=device, sensor=sensor, exposure=1.0f0, tonemap=:aces, gamma=2.2f0)
+    RayMakie.activate!(; device=device, exposure=1.0f0, tonemap=:aces, gamma=2.2f0)
     integrator = Hikari.VolPath(; samples=samples, max_depth=max_depth, hw_accel=hw_accel)
     @time img = colorbuffer(scene; backend=RayMakie, integrator=integrator)
     mkpath(dirname(output_path))

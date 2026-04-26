@@ -341,7 +341,7 @@ function create_scene(;
     )
 
     volume_material = Hikari.MediumInterface(
-        Hikari.ThinDielectricMaterial(eta=1.0f0),
+        Hikari.ThinDielectric(eta=1.0f0),
         inside=spacetime,
         outside=nothing
     )
@@ -365,7 +365,7 @@ function create_scene(;
     # Event horizon (black sphere)
     mesh!(ax, Sphere(Point3f(0, 0, 0), Float32(schwarzschild_radius));
         color=RGBf(0, 0, 0), visible=false,
-        material=Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(0f0, 0f0, 0f0))
+        material=Hikari.Diffuse(Kd=Hikari.RGBSpectrum(0f0, 0f0, 0f0))
     )
 
     # Camera: edge-on view for classic black hole look
@@ -391,9 +391,8 @@ function render_scene(;
     ax = create_scene(resolution=resolution)
     GC.gc(true)
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth)
-    sensor = Hikari.FilmSensor(iso=30, white_balance=5500)
     @time result = Makie.colorbuffer(ax;
-        backend=RayMakie, device=device, integrator=integrator, sensor=sensor,
+        backend=RayMakie, device=device, integrator=integrator,
     )
     mkpath(dirname(output_path))
     save(output_path, result)
@@ -406,8 +405,7 @@ function render_interactive(;
     resolution=(800, 450),
 )
     ax = create_scene(resolution=resolution)
-    sensor = Hikari.FilmSensor(iso=30, white_balance=5500)
-    RayMakie.interactive_window(ax; device=device, sensor=sensor, integrator=Hikari.VolPath(samples=1, max_depth=100))
+    RayMakie.interactive_window(ax; device=device, integrator=Hikari.VolPath(samples=1, max_depth=100))
     display(ax; backend=GLMakie, update=false)
 end
 

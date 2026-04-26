@@ -3,8 +3,8 @@ using ProtPlot, ProteinChains
 
 structure = pdb"1HQK"
 
-ground_material = Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(0.15f0, 0.15f0, 0.18f0))
-protein_material = Hikari.GlassMaterial()
+ground_material = Hikari.Diffuse(Kd=Hikari.RGBSpectrum(0.15f0, 0.15f0, 0.18f0))
+protein_material = Hikari.Dielectric()
 set_theme!(Mesh=(material=protein_material,))
 
 function create_scene(; resolution=(1500, 1500), intensity=1f0)

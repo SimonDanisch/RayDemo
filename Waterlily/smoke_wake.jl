@@ -98,7 +98,7 @@ function build_scene(vorticity, params;
     # Dark matte sphere
     sphere_center = Point3f(m ÷ 2, m ÷ 2, m ÷ 2)
     sphere_mesh = GeometryBasics.normal_mesh(Sphere(sphere_center, Float32(R)))
-    sphere_material = Hikari.CoatedDiffuseMaterial(
+    sphere_material = Hikari.CoatedDiffuse(
         reflectance=(0.07f0, 0.06f0, 0.01f0),
         roughness=0.1f0,
         eta=1.5f0,
@@ -115,7 +115,7 @@ function build_scene(vorticity, params;
     ]
     gf = GLTriangleFace[(1, 2, 3), (1, 3, 4)]
     ground_mesh = GeometryBasics.normal_mesh(gv, gf)
-    ground_material = Hikari.CoatedDiffuseMaterial(
+    ground_material = Hikari.CoatedDiffuse(
         reflectance=(0.1f0, 0.1f0, 0.12f0),
         roughness=0.1f0,
         eta=1.5f0,

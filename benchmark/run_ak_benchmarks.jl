@@ -284,7 +284,7 @@ function _detect_ak_backends()
         Lava = getfield(Main, :Lava)
         try
             Lava.LavaArray(Float32[0])
-            push!(backends, ("lava", Lava.LavaArray, () -> Lava.vk_flush!()))
+            push!(backends, ("lava", Lava.LavaArray, () -> Lava.vk_flush!(Lava.vk_context())))
             @info "AK backend: Lava"
         catch; end
     end

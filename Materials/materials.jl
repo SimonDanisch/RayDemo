@@ -116,7 +116,7 @@ function create_scene(; resolution=(1200, 900))
         conductor_roughness=0.01
     )
     coated_blue = Hikari.CoatedDiffuse(reflectance=(0.1, 0.2, 0.7), roughness=0.05)
-    plastic_white = Hikari.Plastic(Kd=(0.9, 0.9, 0.9), Ks=(0.4, 0.4, 0.4), roughness=0.15)
+    plastic_white = Hikari.Plastic(color=(0.9, 0.9, 0.9), roughness=0.15)
 
     # --- Emissive materials ---
     emissive_white = Hikari.MediumInterface(Hikari.Emissive(Le=(4, 4, 4)))
@@ -178,15 +178,26 @@ function render_scene(;
     hw_accel=false,
 )
     scene = create_scene(; resolution=resolution)
-    GC.gc(true)
-    sensor = Hikari.FilmSensor(; iso=50, exposure_time=1.0, white_balance=0)
-    RayMakie.activate!(; device=device, sensor=sensor, exposure=0.6f0, tonemap=:aces, gamma=2.2f0)
+    RayMakie.activate!(; device=device, exposure=0.6f0, tonemap=:aces, gamma=2.2f0)
     integrator = Hikari.VolPath(; samples=samples, max_depth=max_depth, hw_accel=hw_accel)
-    @time img = colorbuffer(scene; backend=RayMakie, integrator=integrator)
+    @time img = colorbuffer(scene; backend=RayMakie, integrator=integrator, update=false)
     mkpath(dirname(output_path))
     save(output_path, img)
     @info "Saved → $output_path"
     return img
 end
 
-# render_scene()
+if abspath(PROGRAM_FILE) == @__FILE__
+    using Lava
+    DEVICE = Lava.LavaBackend()
+    scene = create_scene()
+    RayMakie.vulkan_viewer(scene)
+    cam = cameracontrols(scene)
+    cam.eyeposition[] = Vec3f(0, -7.5, 2.5)
+    cam.lookat[] = Vec3f(0, -4.7, 0)
+    cam.upvector[] = Vec3f(0, 0, 1)
+    cam.fov[] = 42
+    update_cam!(scene, cam)
+    colorbuffer(scene; update=false)
+    data_limits(scene)
+end

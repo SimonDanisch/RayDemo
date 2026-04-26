@@ -1,6 +1,6 @@
 include("../common/common.jl")
 using GeometryBasics, StaticArrays, Colors
-
+using Lava, RayMakie
 # Scene data lives alongside this script (geometry/*.ply, textures/, crown.pbrt)
 const CROWN_DIR = @__DIR__
 @assert isfile(joinpath(CROWN_DIR, "crown.pbrt")) "crown.pbrt not found in $CROWN_DIR"
@@ -112,12 +112,12 @@ function create_hikari_material(params::Dict, all_materials::Dict)
         else
             r = get(params, "roughness", 0.01f0)
         end
-        return Hikari.CoatedDiffuseMaterial(reflectance=refl, roughness=r, eta=1.5f0)
+        return Hikari.CoatedDiffuse(reflectance=refl, roughness=r, eta=1.5f0)
     elseif t == "dielectric"
-        return Hikari.GlassMaterial(index=get(params, "eta", 1.5f0))
+        return Hikari.Dielectric(index=get(params, "eta", 1.5f0))
     elseif t == "diffuse"
         kd = get(params, "reflectance", (0.5f0, 0.5f0, 0.5f0))
-        return Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(kd[1], kd[2], kd[3]))
+        return Hikari.Diffuse(Kd=Hikari.RGBSpectrum(kd[1], kd[2], kd[3]))
     elseif t == "mix"
         mix_names = get(params, "mix_materials", nothing)
         if mix_names !== nothing
@@ -126,17 +126,17 @@ function create_hikari_material(params::Dict, all_materials::Dict)
             if mat1_params !== nothing && mat2_params !== nothing
                 m1 = create_hikari_material(mat1_params, all_materials)
                 m2 = create_hikari_material(mat2_params, all_materials)
-                if m2 isa Hikari.ConductorMaterial
+                if m2 isa Hikari.Conductor
                     return m2
-                elseif m1 isa Hikari.ConductorMaterial
+                elseif m1 isa Hikari.Conductor
                     return m1
                 end
                 return m1
             end
         end
-        return Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(0.5f0))
+        return Hikari.Diffuse(Kd=Hikari.RGBSpectrum(0.5f0))
     else
-        return Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(0.5f0))
+        return Hikari.Diffuse(Kd=Hikari.RGBSpectrum(0.5f0))
     end
 end
 
@@ -198,7 +198,7 @@ function create_scene(; resolution=(500, 700))
     end
 
     env_sphere_mesh = GeometryBasics.normal_mesh(Tesselation(Sphere(Point3f(0), 100f0), 64))
-    env_mat = Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(0.2f0, 0.2f0, 0.2f0))
+    env_mat = Hikari.Diffuse(Kd=Hikari.RGBSpectrum(0.2f0, 0.2f0, 0.2f0))
     mesh!(scene, env_sphere_mesh; material=env_mat)
 
     loaded = 0
@@ -239,8 +239,7 @@ function render_scene(;
 )
     scene = create_scene(; resolution=resolution)
     GC.gc(true)
-    sensor = Hikari.FilmSensor(; iso=10, exposure_time=1.0, white_balance=4000)
-    RayMakie.activate!(; device=device, sensor=sensor, exposure=1.0f0, tonemap=:aces, gamma=2.2f0)
+    RayMakie.activate!(; device=device, exposure=1.0f0, tonemap=:aces, gamma=2.2f0)
     integrator = Hikari.VolPath(; samples=samples, max_depth=max_depth, hw_accel=hw_accel)
     @time img = colorbuffer(scene; backend=RayMakie, integrator=integrator)
     mkpath(dirname(output_path))
@@ -249,29 +248,7 @@ function render_scene(;
     return img
 end
 
-# render_scene()
-scene = create_scene(; resolution=(800, 800).*2);
-sensor = Hikari.FilmSensor(; iso=10, exposure_time=1.0, white_balance=4000)
-screen = RayMakie.vulkan_viewer(scene; sensor)
-
-using Revise, RayMakie, Hikari, Makie, Lava
-begin
-    scene, ax, pl = surface(0 .. 5, 0 .. 5, rand(100, 100); figure=(; size=(2*800, 800)))
-    scatter(scene[1, 2],rand(Point2f, 100), markersize=20, color=rand(100))
-    Makie.update_state_before_display!(scene)
-    sensor = Hikari.FilmSensor(; iso=10, exposure_time=1.0, white_balance=4000)
-    screen = RayMakie.vulkan_viewer(scene; sensor)
-end
-
-begin
-    scene, ax, pl = surface(0 .. 5, 0 .. 5, rand(100, 100); figure=(; size=(2*800, 800)))
+if abspath(PROGRAM_FILE) == @__FILE__
+    scene = create_scene(; resolution=(800, 800))
     screen = RayMakie.vulkan_viewer(scene)
 end
-
-
-begin
-    f, ax, pl = scatter(rand(Point2f, 100), markersize=20, color=rand(100))
-    Makie.update_state_before_display!(f)
-    screen = RayMakie.vulkan_viewer(f)
-end
-close(screen)
