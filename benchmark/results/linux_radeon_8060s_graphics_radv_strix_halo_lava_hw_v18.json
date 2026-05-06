@@ -1,0 +1,31 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "radeon_8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "radeon_8060s_graphics_radv_strix_halo",
+        "backend_name": "lava_hw",
+        "version": "v18",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-04-05 13:02:31",
+        "julia_version": "1.12.5",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "crown": {
+            "error": "LavaError during command flush:\n  Vulkan device lost\n  Suggestion: Call Lava.vk_reset_device!() to reinitialize, or restart Julia session."
+        },
+        "bunny_cloud": {
+            "error": "LavaError during buffer copy:\n  Vulkan device lost\n  Suggestion: Call Lava.vk_reset_device!() to reinitialize, or restart Julia session."
+        },
+        "killeroo_gold": {
+            "error": "LavaError during buffer copy:\n  Vulkan device lost\n  Suggestion: Call Lava.vk_reset_device!() to reinitialize, or restart Julia session."
+        },
+        "materials": {
+            "error": "LavaError during buffer copy:\n  Vulkan device lost\n  Suggestion: Call Lava.vk_reset_device!() to reinitialize, or restart Julia session."
+        }
+    }
+}

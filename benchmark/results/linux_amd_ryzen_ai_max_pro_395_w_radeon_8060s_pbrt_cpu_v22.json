@@ -1,0 +1,58 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "radeon_8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "backend_name": "pbrt_cpu",
+        "version": "v22",
+        "renderer": "pbrt-v4",
+        "pbrt_mode": "cpu",
+        "pbrt_binary": "/sim/Programmieren/RayTracing/pbrt-v4/build/pbrt",
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-04-25 22:59:11",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "bunny_cloud": {
+            "resolution": "native",
+            "samples": 8,
+            "pbrt_mode": "cpu",
+            "timings": [
+                22.060445566,
+                22.060065605,
+                22.179209902
+            ],
+            "median": 22.0604,
+            "min": 22.0601,
+            "max": 22.1792
+        },
+        "killeroo_gold": {
+            "resolution": "native",
+            "samples": 32,
+            "pbrt_mode": "cpu",
+            "timings": [
+                16.545135778,
+                16.503121723,
+                16.413079038
+            ],
+            "median": 16.5031,
+            "min": 16.4131,
+            "max": 16.5451
+        },
+        "materials": {
+            "resolution": "native",
+            "samples": 10,
+            "pbrt_mode": "cpu",
+            "timings": [
+                7.922739147,
+                7.956123651,
+                7.974176301
+            ],
+            "median": 7.9561,
+            "min": 7.9227,
+            "max": 7.9742
+        }
+    }
+}

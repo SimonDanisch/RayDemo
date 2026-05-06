@@ -1,0 +1,79 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "radeon_8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "radeon_8060s_graphics_radv_strix_halo",
+        "backend_name": "lava_sw",
+        "version": "v16",
+        "renderer": "raymakie",
+        "hw_accel": false,
+        "n_warmup": 1,
+        "n_trials": 1,
+        "timestamp": "2026-04-05 12:07:58",
+        "julia_version": "1.12.5",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "crown": {
+            "resolution": [
+                500,
+                700
+            ],
+            "samples": 16,
+            "max_depth": 12,
+            "hw_accel": false,
+            "timings": [
+                3.802307977
+            ],
+            "median": 3.8023,
+            "min": 3.8023,
+            "max": 3.8023
+        },
+        "bunny_cloud": {
+            "resolution": [
+                960,
+                540
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                3.108202628
+            ],
+            "median": 3.1082,
+            "min": 3.1082,
+            "max": 3.1082
+        },
+        "killeroo_gold": {
+            "resolution": [
+                684,
+                513
+            ],
+            "samples": 32,
+            "max_depth": 8,
+            "hw_accel": false,
+            "timings": [
+                2.093371721
+            ],
+            "median": 2.0934,
+            "min": 2.0934,
+            "max": 2.0934
+        },
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                2.679930987
+            ],
+            "median": 2.6799,
+            "min": 2.6799,
+            "max": 2.6799
+        }
+    }
+}
