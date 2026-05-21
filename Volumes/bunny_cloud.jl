@@ -40,7 +40,7 @@ function create_scene(;
     s.camera_controls.fov[] = 25.0
 
     # Transparent boundary material
-    transparent = Hikari.GlassMaterial(
+    transparent = Hikari.Dielectric(
         Kr = Hikari.RGBSpectrum(0f0),
         Kt = Hikari.RGBSpectrum(1f0),
         index = 1.0f0
@@ -53,16 +53,26 @@ function create_scene(;
     volume_material = Hikari.MediumInterface(transparent; inside=nanovdb_medium, outside=nothing)
     mesh!(s, sphere_mesh; material=volume_material)
 
-    # Ground
-    ground_size = 1000f0
-    ground_geo = Rect3f(Vec3f(-ground_size, -ground_size, -0.1f0),
-                        Vec3f(2*ground_size, 2*ground_size, 0.2f0))
-    ground_material = Hikari.CoatedDiffuseMaterial(
+    # Ground: disk radius 1000 at z=-50, matching bunny-cloud.pbrt
+    # ("Translate 0 -50 0" in pbrt-Y-up is z=-50 in our Z-up world frame).
+    ground_material = Hikari.CoatedDiffuse(
         reflectance = (0.4f0, 0.45f0, 0.35f0),
         roughness = 0f0,
         eta = 1.5f0,
         thickness = 0.01f0
     )
+    ground_r = 1000f0
+    ground_z = -50f0
+    ground_segments = 96
+    ground_verts = Vector{Point3f}(undef, ground_segments + 1)
+    ground_verts[1] = Point3f(0, 0, ground_z)
+    for i in 0:ground_segments-1
+        ground_verts[i+2] = Point3f(ground_r*cos(2π*i/ground_segments),
+                                    ground_r*sin(2π*i/ground_segments), ground_z)
+    end
+    ground_faces = [TriangleFace{Int}(1, 2 + i, 2 + mod(i+1, ground_segments))
+                    for i in 0:ground_segments-1]
+    ground_geo = GeometryBasics.Mesh(ground_verts, ground_faces)
     mesh!(s, ground_geo; color=RGBf(0.4f0, 0.45f0, 0.35f0), material=ground_material)
 
     # Environment light
@@ -95,6 +105,8 @@ end
 
 # render_scene()
 
-scene = create_scene(; resolution=(800, 800))
-sensor = Hikari.FilmSensor(; iso=50, white_balance=5000)
-RayMakie.vulkan_viewer(scene; sensor)
+if abspath(PROGRAM_FILE) == @__FILE__
+    scene = create_scene(; resolution=(1920, 1080))
+    sensor = Hikari.PixelSensor(sensor="nikon_d850", iso=90f0, whitebalance=5000f0)
+    RayMakie.vulkan_viewer(scene; sensor)
+end

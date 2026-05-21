@@ -68,7 +68,7 @@ function create_scene(; resolution=(1500, 1500))
     # GLTF has 0.01 scale baked in, so scale up to make visible
     # From JuliaHub
     spacecraft_mesh = FileIO.load(joinpath(@__DIR__, "assets", "hl20.gltf"); up=Vec3f(0, 1, 0))
-    spacecraft_material = Hikari.CoatedDiffuseMaterial(
+    spacecraft_material = Hikari.CoatedDiffuse(
         reflectance=(0.95f0, 0.95f0, 0.95f0),
         roughness=0.001f0, eta=1.5f0, thickness=0.03f0
     )
@@ -85,7 +85,7 @@ function create_scene(; resolution=(1500, 1500))
     exhaust_bounds = Hikari.Bounds3(exhaust_pos, exhaust_pos + exhaust_size)
     exhaust_medium = create_exhaust_medium(res=32, emission_scale=5000f0, bounds=exhaust_bounds)
     exhaust_material = Hikari.MediumInterface(
-        Hikari.GlassMaterial(Kr=Hikari.RGBSpectrum(0f0), Kt=Hikari.RGBSpectrum(1f0), index=1.0f0);
+        Hikari.Dielectric(Kr=Hikari.RGBSpectrum(0f0), Kt=Hikari.RGBSpectrum(1f0), index=1.0f0);
         inside=exhaust_medium, outside=nothing
     )
     mesh!(ax, Rect3f(exhaust_pos, exhaust_size); material=exhaust_material)
@@ -93,7 +93,7 @@ function create_scene(; resolution=(1500, 1500))
     # Ground plane
     lookat = cam.lookat[]
     min_y = lookat[2] - 2
-    ground_material = Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(0.15f0, 0.15f0, 0.18f0))
+    ground_material = Hikari.Diffuse(Kd=Hikari.RGBSpectrum(0.15f0, 0.15f0, 0.18f0))
     mesh!(ax, Rect3f(Point3f(lookat[1] - 50, min_y, lookat[3] - 50), Vec3f(100, 0.1, 100));
         material=ground_material, color=Makie.wong_colors()[2])
 

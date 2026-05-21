@@ -4,7 +4,7 @@ using ProtPlot, ProteinChains
 function create_scene(; resolution=(800, 800))
     structure = pdb"7PKZ"
     r = 100
-    ground_material = Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(0.15f0, 0.15f0, 0.18f0))
+    ground_material = Hikari.Diffuse(Kd=Hikari.RGBSpectrum(0.15f0, 0.15f0, 0.18f0))
     protein_material = Hikari.Gold(roughness=0.1f0)
     set_theme!(Mesh=(material=protein_material,))
     ax = Scene(size=resolution; lights=[

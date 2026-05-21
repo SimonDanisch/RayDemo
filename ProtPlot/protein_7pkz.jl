@@ -3,8 +3,8 @@ using ProtPlot, ProteinChains
 
 structure = pdb"7PKZ"
 
-ground_material = Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(0.15f0, 0.15f0, 0.18f0))
-protein_material = Hikari.CoatedDiffuseMaterial(
+ground_material = Hikari.Diffuse(Kd=Hikari.RGBSpectrum(0.15f0, 0.15f0, 0.18f0))
+protein_material = Hikari.CoatedDiffuse(
     reflectance=(0.95f0, 0.95f0, 0.95f0), roughness=0.05f0, eta=1.5f0, thickness=0.01f0
 )
 set_theme!(Mesh=(material=protein_material,))

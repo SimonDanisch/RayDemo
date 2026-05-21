@@ -1,0 +1,8 @@
+using Pkg; Pkg.activate("/sim/Programmieren/VulkanDev")
+include("/sim/Programmieren/VulkanDev/RayDemo/Waterlily/dolphin.jl")
+println("ω in dolphin(): 0.5 rad/tU (0.72 beats over 9 tU; peak tail vel ≈ 9.6 units/tU)")
+println("starting generate_steps()...")
+flush(stdout)
+t0 = time()
+generate_steps()
+println("generate_steps() done in $(round(time()-t0, digits=1))s")

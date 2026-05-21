@@ -1,6 +1,6 @@
 # WaterLily Sine Wave — Raytraced Ocean Demo
 # Marching cubes isosurface + Laplacian smoothing for artifact-free water surface.
-# GlassMaterial (IOR 1.33) gives Fresnel reflections + refraction → realistic water.
+# Dielectric (IOR 1.33) gives Fresnel reflections + refraction → realistic water.
 # HomogeneousMedium inside for volumetric blue color at depth.
 
 using GLMakie, RayMakie, Hikari
@@ -80,7 +80,7 @@ end
 
 # Water surface: physically correct dielectric (Fresnel handles reflection split)
 # No volumetric medium — color comes from Fresnel sky reflections + tinted transmission
-water_material = Hikari.GlassMaterial(
+water_material = Hikari.Dielectric(
     Kr = Hikari.RGBSpectrum(1f0, 1f0, 1f0),
     Kt = Hikari.RGBSpectrum(0.7f0, 0.85f0, 0.95f0),    # blue tint on transmission
     roughness = 0.001f0,                                   # slight surface roughness
@@ -131,7 +131,7 @@ function build_wave_scene(;
     )
     # Ocean floor — sandy bottom, not too deep so caustics are visible
     # floor_z = -water_z - 2f0
-    # sandy_floor = Hikari.MatteMaterial(Kd=(0.15f0, 0.13f0, 0.1f0), σ=20f0)
+    # sandy_floor = Hikari.Diffuse(Kd=(0.15f0, 0.13f0, 0.1f0), σ=20f0)
     # mesh!(ax, Rect3f(Vec3f(-S, -S, floor_z-0.01f0), Vec3f(2S, 2S, 0.02f0));
     #     color=RGBf(0.15, 0.13, 0.1), material=sandy_floor)
 

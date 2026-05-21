@@ -275,7 +275,7 @@ function rayshader_scene(;
     # Position cloud box above terrain, matching the scene's normalized coordinates
     cloud_origin = Point3f(x_min_norm, y_min_norm, cloud_base_norm)
     cloud_size = Vec3f(cloud_xy_extent, cloud_xy_extent, cloud_thickness_norm)
-    transparent = Hikari.GlassMaterial(
+    transparent = Hikari.Dielectric(
         Kr=Hikari.RGBSpectrum(0f0), Kt=Hikari.RGBSpectrum(1f0), index=1.0f0
     )
     volume_material = Hikari.MediumInterface(transparent; inside=cloud_medium, outside=nothing)

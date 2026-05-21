@@ -34,12 +34,14 @@ function make_perlin_rgb_texture(resolution::Int; scale=4.0, base_color=(1.0, 1.
 end
 
 function create_scene(; resolution=(1200, 900))
+    # Lights match materials.pbrt: two point lights with I=[50,50,50] at (10,10,10)
+    # and I=[15,15,15] at (-0.3,-5.5,1.5).
     lights = [
-        PointLight(RGBf(60, 60, 60), Vec3f(8, 8, 10)),
-        PointLight(RGBf(20, 20, 20), Vec3f(-2, -6, 3)),
+        PointLight(RGBf(50, 50, 50), Vec3f(10, 10, 10)),
+        PointLight(RGBf(15, 15, 15), Vec3f(-0.3, -5.5, 1.5)),
     ]
 
-    ax = Scene(; size=resolution, lights=lights, ambient=RGBf(0.02, 0.02, 0.025))
+    ax = Scene(; size=resolution, lights=lights)
     cam3d!(ax)
 
     # --- Glass and transparent materials (front row) ---
@@ -116,7 +118,7 @@ function create_scene(; resolution=(1200, 900))
         conductor_roughness=0.01
     )
     coated_blue = Hikari.CoatedDiffuse(reflectance=(0.1, 0.2, 0.7), roughness=0.05)
-    plastic_white = Hikari.Plastic(Kd=(0.9, 0.9, 0.9), Ks=(0.4, 0.4, 0.4), roughness=0.15)
+    plastic_white = Hikari.Plastic(color=(0.9, 0.9, 0.9), roughness=0.15)
 
     # --- Emissive materials ---
     emissive_white = Hikari.MediumInterface(Hikari.Emissive(Le=(4, 4, 4)))
@@ -140,9 +142,17 @@ function create_scene(; resolution=(1200, 900))
         emissive_warm  paper           diffuse_gray   textured_emissive
     ]
 
-    # Floor
-    floor_material = Hikari.Diffuse(Kd=(0.7, 0.7, 0.7))
-    floor_mesh = Rect3f(Vec3f(-10, -10, -0.001), Vec3f(20, 20, 0.001))
+    # Floor: disk radius 10 at z=0 with reflectance 0.8 (matches materials.pbrt).
+    floor_material = Hikari.Diffuse(Kd=(0.8, 0.8, 0.8))
+    floor_segments = 96
+    floor_verts = Vector{Point3f}(undef, floor_segments + 1)
+    floor_verts[1] = Point3f(0, 0, 0)
+    for i in 0:floor_segments-1
+        floor_verts[i+2] = Point3f(10*cos(2π*i/floor_segments), 10*sin(2π*i/floor_segments), 0)
+    end
+    floor_faces = [TriangleFace{Int}(1, 2 + i, 2 + mod(i+1, floor_segments))
+                   for i in 0:floor_segments-1]
+    floor_mesh = GeometryBasics.Mesh(floor_verts, floor_faces)
     mesh!(ax, floor_mesh; material=floor_material)
 
     # Place spheres in grid
@@ -155,12 +165,12 @@ function create_scene(; resolution=(1200, 900))
         mesh!(ax, Sphere(pos, sphere_radius), material=mat)
     end
 
-    # Camera
+    # Camera from materials.pbrt: LookAt 0 -8 2  0 -4.5 0  0 0 1; fov 40.
     cam = cameracontrols(ax)
-    cam.eyeposition[] = Vec3f(0, -7.5, 2.5)
-    cam.lookat[] = Vec3f(0, -4.7, 0)
+    cam.eyeposition[] = Vec3f(0, -8, 2)
+    cam.lookat[] = Vec3f(0, -4.5, 0)
     cam.upvector[] = Vec3f(0, 0, 1)
-    cam.fov[] = 42
+    cam.fov[] = 40
     update_cam!(ax, cam)
     return ax
 end
@@ -178,15 +188,28 @@ function render_scene(;
     hw_accel=false,
 )
     scene = create_scene(; resolution=resolution)
-    GC.gc(true)
     sensor = Hikari.FilmSensor(; iso=50, exposure_time=1.0, white_balance=0)
     RayMakie.activate!(; device=device, sensor=sensor, exposure=0.6f0, tonemap=:aces, gamma=2.2f0)
     integrator = Hikari.VolPath(; samples=samples, max_depth=max_depth, hw_accel=hw_accel)
-    @time img = colorbuffer(scene; backend=RayMakie, integrator=integrator)
+    @time img = colorbuffer(scene; backend=RayMakie, integrator=integrator, update=false)
     mkpath(dirname(output_path))
     save(output_path, img)
     @info "Saved → $output_path"
     return img
 end
 
-# render_scene()
+if abspath(PROGRAM_FILE) == @__FILE__
+    using Lava
+    DEVICE = Lava.LavaBackend()
+    scene = create_scene()
+    sensor = Hikari.PixelSensor(; iso=50, exposure_time=1.0, whitebalance=0)
+    RayMakie.vulkan_viewer(scene; sensor=sensor)
+    cam = cameracontrols(scene)
+    cam.eyeposition[] = Vec3f(0, -7.5, 2.5)
+    cam.lookat[] = Vec3f(0, -4.7, 0)
+    cam.upvector[] = Vec3f(0, 0, 1)
+    cam.fov[] = 42
+    update_cam!(scene, cam)
+    colorbuffer(scene; update=false)
+    data_limits(scene)
+end

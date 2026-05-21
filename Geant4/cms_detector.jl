@@ -99,7 +99,7 @@ function create_trace_scene(lv_meshes; glass_meshes=nothing, resolution=(800, 10
             a < 0.1 && continue
             mat_idx += 1
             color_tex = Hikari.ConstTexture(RayMakie.to_spectrum(RGB(r, g, b)))
-            mat = RayMakie.merge_color_with_material(color_tex, Hikari.GlassMaterial())
+            mat = RayMakie.merge_color_with_material(color_tex, Hikari.Dielectric())
             add_group!(meshes, mat, "glass_$mat_idx")
         end
     end
@@ -120,7 +120,7 @@ function create_trace_scene(lv_meshes; glass_meshes=nothing, resolution=(800, 10
     s  = 7f0   # half-width of box
     sh = 20f0  # ceiling height
 
-    box_material = Hikari.MatteMaterial()
+    box_material = Hikari.Diffuse()
     function make_quad(p1, p2, p3, p4)
         pts = Point3f[p1, p2, p3, p4]
         faces = TriangleFace{Int}[(1,2,3), (1,3,4)]

@@ -341,7 +341,7 @@ function create_scene(;
     )
 
     volume_material = Hikari.MediumInterface(
-        Hikari.ThinDielectricMaterial(eta=1.0f0),
+        Hikari.ThinDielectric(eta=1.0f0),
         inside=spacetime,
         outside=nothing
     )
@@ -365,7 +365,7 @@ function create_scene(;
     # Event horizon (black sphere)
     mesh!(ax, Sphere(Point3f(0, 0, 0), Float32(schwarzschild_radius));
         color=RGBf(0, 0, 0), visible=false,
-        material=Hikari.MatteMaterial(Kd=Hikari.RGBSpectrum(0f0, 0f0, 0f0))
+        material=Hikari.Diffuse(Kd=Hikari.RGBSpectrum(0f0, 0f0, 0f0))
     )
 
     # Camera: edge-on view for classic black hole look

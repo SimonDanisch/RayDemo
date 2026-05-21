@@ -215,6 +215,14 @@ function run_ak_benchmarks(;
 
     if backends === nothing
         backends = _detect_ak_backends()
+    elseif eltype(backends) <: AbstractString
+        # Filter detected AK backends by name. Accepts both AK-native names
+        # ("lava", "cpu") and render-side names ("lava_hw", "lava_sw") — the
+        # latter normalize to "lava" since AK doesn't differentiate HW/SW.
+        requested = Set(String[replace(b, r"^lava_(hw|sw)$" => "lava") for b in backends])
+        # Skip backends that don't have an AK equivalent (pbrt).
+        requested = Set(b for b in requested if !startswith(b, "pbrt_"))
+        backends = filter(t -> t[1] in requested, _detect_ak_backends())
     end
 
     all_results = OrderedDict{String, Any}()

@@ -534,7 +534,7 @@ function color_to_material(color::Tuple{RGB, Float64})
     if r > 0.8 && g < 0.4 && b < 0.4  # Orangered (Fe)
         return Hikari.Copper(roughness=0.01f0)
     elseif r < 0.3 && g < 0.3 && b > 0.7  # Blue (Cu)
-        return Hikari.CoatedDiffuseMaterial(reflectance=(r, g, b), roughness=0.15f0, eta=1.5f0)
+        return Hikari.CoatedDiffuse(reflectance=(r, g, b), roughness=0.15f0, eta=1.5f0)
     elseif r > 0.8 && g > 0.8 && b < 0.3  # Yellow (Si)
         return Hikari.Gold(roughness=0.2f0, reflectance=(1.0f0, 1.0f0, 0.8f0))
     elseif r > 0.7 && g > 0.7 && b > 0.7  # White/silver
@@ -542,9 +542,9 @@ function color_to_material(color::Tuple{RGB, Float64})
     elseif r > 0.5 && g > 0.5 && b > 0.5  # Gray
         return Hikari.Aluminum(roughness=0.15f0)
     elseif r < 0.4 && g > 0.6 && b > 0.8  # Skyblue (N)
-        return Hikari.CoatedDiffuseMaterial(reflectance=(r, g, b), roughness=0.1f0, eta=1.5f0)
+        return Hikari.CoatedDiffuse(reflectance=(r, g, b), roughness=0.1f0, eta=1.5f0)
     else
-        return Hikari.CoatedDiffuseMaterial(reflectance=(r, g, b), roughness=0.2f0, eta=1.5f0)
+        return Hikari.CoatedDiffuse(reflectance=(r, g, b), roughness=0.2f0, eta=1.5f0)
     end
 end
 

@@ -29,7 +29,8 @@ const BENCHMARK_SCENES = OrderedDict(
         samples = 16,
         max_depth = 12,
         colorbuffer_kwargs = (; exposure=1.0f0, tonemap=:aces, gamma=2.2f0),
-        sensor_kwargs = (; iso=10, exposure_time=1.0, white_balance=4000),
+        # crown.pbrt: sensor "canon_eos_5d_mkiv" iso 150
+        sensor_kwargs = (; sensor="canon_eos_5d_mkiv", iso=150),
         # pbrt scene: run from this directory so relative paths in .pbrt work
         pbrt_dir = joinpath(RAYDEMO_DIR, "Crown"),
         pbrt_file = "crown.pbrt",
@@ -40,7 +41,8 @@ const BENCHMARK_SCENES = OrderedDict(
         samples = 8,
         max_depth = 50,
         colorbuffer_kwargs = (; exposure=0.5, tonemap=nothing, gamma=2.2f0),
-        sensor_kwargs = (; iso=50f0, white_balance=5000),
+        # bunny-cloud.pbrt: sensor "nikon_d850" iso 90 whitebalance 5000
+        sensor_kwargs = (; sensor="nikon_d850", iso=90, whitebalance=5000),
         pbrt_dir = joinpath(RAYDEMO_DIR, "Volumes"),
         pbrt_file = "bunny-cloud.pbrt",
     ),
@@ -50,7 +52,8 @@ const BENCHMARK_SCENES = OrderedDict(
         samples = 32,
         max_depth = 8,
         colorbuffer_kwargs = (; exposure=1.0f0, tonemap=:aces, gamma=2.2f0),
-        sensor_kwargs = (; iso=100, white_balance=5500),
+        # killeroo-gold.pbrt: no Film sensor override → pbrt defaults (cie1931, iso 100).
+        sensor_kwargs = (; iso=100),
         pbrt_dir = joinpath(RAYDEMO_DIR, "KillerooGold"),
         pbrt_file = "killeroo-gold.pbrt",
     ),
@@ -58,9 +61,10 @@ const BENCHMARK_SCENES = OrderedDict(
         script = joinpath(RAYDEMO_DIR, "Materials", "materials.jl"),
         resolution = (1200, 900),
         samples = 10,
-        max_depth = 50,
+        max_depth = 8,
         colorbuffer_kwargs = (; exposure=0.6f0, tonemap=:aces, gamma=2.2f0),
-        sensor_kwargs = (; iso=50, exposure_time=1.0, white_balance=0),
+        # materials.pbrt: no Film sensor override → pbrt defaults (cie1931, iso 100).
+        sensor_kwargs = (; iso=100),
         pbrt_dir = joinpath(RAYDEMO_DIR, "Materials"),
         pbrt_file = "materials.pbrt",
     ),
@@ -70,7 +74,7 @@ const BENCHMARK_SCENES = OrderedDict(
         samples = 32,
         max_depth = 100,
         colorbuffer_kwargs = (;),
-        sensor_kwargs = (; iso=30, white_balance=5500),
+        sensor_kwargs = (; iso=30, whitebalance=5500),
         pbrt_dir = nothing,
         pbrt_file = nothing,
     ),
@@ -416,10 +420,10 @@ function run_julia_benchmarks(;
         end
         println("done.")
 
-        sensor = Base.invokelatest(Hikari.FilmSensor; cfg.sensor_kwargs...)
+        sensor = Base.invokelatest(Hikari.PixelSensor; cfg.sensor_kwargs...)
         integrator = Base.invokelatest(Hikari.VolPath;
-            samples=cfg.samples, max_depth=cfg.max_depth, hw_accel=hw_accel)
-        Base.invokelatest(RayMakie.activate!; device=backend, sensor=sensor, cfg.colorbuffer_kwargs...)
+            samples=cfg.samples, max_depth=cfg.max_depth, hw_accel=hw_accel, sensor=sensor)
+        Base.invokelatest(RayMakie.activate!; device=backend, cfg.colorbuffer_kwargs...)
 
         # Warmup
         println("  Warmup ($n_warmup)...")
@@ -632,25 +636,36 @@ To run only AK benchmarks: include run_ak_benchmarks.jl and call `run_ak_benchma
 """
 function run_all_benchmarks(;
     scenes::Vector{String} = collect(keys(BENCHMARK_SCENES)),
+    backends::Union{Nothing,Vector{String}} = nothing,
     n_warmup::Int = 1,
     n_trials::Int = 3,
     ak_n::Int = 10_000_000,
     version::String = "v1",
     force::Bool = false,
+    run_render::Bool = true,
+    run_ak::Bool = true,
+    run_pbrt::Bool = true,
 )
-    # Run render benchmarks
-    render_results = run_all_render_benchmarks(; scenes, n_warmup, n_trials, version, force)
+    render_results = nothing
+    if run_render
+        render_results = run_all_render_benchmarks(;
+            scenes, backends, n_warmup, n_trials, version, force, run_pbrt)
+    end
 
-    # Run AK benchmarks
-    platform, gpu_name, cpu_name = detect_system()
-    println("\n\n" * "#"^60)
-    println("# AcceleratedKernels Benchmarks ($ak_n elements)")
-    println("#"^60)
-    try
-        include(joinpath(@__DIR__, "run_ak_benchmarks.jl"))
-        Base.invokelatest(run_ak_benchmarks; n=ak_n, platform, gpu_name, cpu_name, version, force)
-    catch e
-        @warn "AK benchmarks failed" exception=(e, catch_backtrace())
+    if run_ak
+        ak_backends = backends
+        platform, gpu_name, cpu_name = detect_system()
+        println("\n\n" * "#"^60)
+        println("# AcceleratedKernels Benchmarks ($ak_n elements)")
+        println("#"^60)
+        try
+            include(joinpath(@__DIR__, "run_ak_benchmarks.jl"))
+            Base.invokelatest(run_ak_benchmarks;
+                n=ak_n, platform, gpu_name, cpu_name, version, force,
+                backends=ak_backends)
+        catch e
+            @warn "AK benchmarks failed" exception=(e, catch_backtrace())
+        end
     end
 
     return render_results
@@ -664,26 +679,37 @@ Results saved as `{platform}_{gpu}_{backend}.json` in benchmark/results/.
 """
 function run_all_render_benchmarks(;
     scenes::Vector{String} = collect(keys(BENCHMARK_SCENES)),
+    backends::Union{Nothing,Vector{String}} = nothing,
     n_warmup::Int = 1,
     n_trials::Int = 3,
     version::String = "v1",
     force::Bool = false,
+    run_pbrt::Bool = true,
 )
-    backends = detect_backends()
-    if isempty(backends)
-        @warn "No backends detected! Load GPU packages first: using Lava, AMDGPU, CUDA"
+    detected = detect_backends()
+    if !run_pbrt
+        detected = filter(p -> !startswith(p.first, "pbrt_"), detected)
+    end
+    if backends !== nothing
+        requested = Set(backends)
+        detected = filter(p -> p.first in requested, detected)
+        missing = setdiff(requested, Set(p.first for p in detected))
+        isempty(missing) || @warn "Requested backends not available" missing
+    end
+    if isempty(detected)
+        @warn "No backends selected. Load GPU packages first: using Lava, AMDGPU, CUDA"
         return
     end
 
     # Detect system after backends (Lava init provides GPU name)
     platform, gpu_name, cpu_name = detect_system()
     println("System: $platform / GPU=$gpu_name / CPU=$cpu_name / $(Sys.CPU_THREADS) threads")
-    println("Detected backends: $(join([b.first for b in backends], ", "))")
+    println("Running backends: $(join([b.first for b in detected], ", "))")
     println()
 
     all_results = OrderedDict{String, Any}()
 
-    for (name, config) in backends
+    for (name, config) in detected
         println("\n" * "#"^60)
         println("# Backend: $name")
         println("#"^60)
