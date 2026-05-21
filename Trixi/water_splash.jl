@@ -181,15 +181,16 @@ function render_video(;
         samples=samples, max_depth=max_depth, max_component_value=10,
         regularize=true
     )
-    sensor = Hikari.FilmSensor(iso=150, white_balance=10000)
+    sensor = Hikari.PixelSensor(iso=150, whitebalance=10000)
+    integrator.sensor = sensor
 
     # Build scene once with first frame
     fig, ax, water_plot, ball_plot = build_water_scene(1; size=resolution)
 
     n_total = length(frame_range)
-    colorbuffer(fig; device=device, integrator=integrator, tonemap=:aces, gamma=2.0, sensor=sensor, update=false)
+    colorbuffer(fig; device=device, integrator=integrator, tonemap=:aces, gamma=2.0, update=false)
     Makie.record_longrunning(ax.scene, output_path, frame_range;
-        framerate=30, device=device, integrator=integrator, tonemap=:aces, gamma=2.0, sensor=sensor, update=false
+        framerate=30, device=device, integrator=integrator, tonemap=:aces, gamma=2.0, update=false
     ) do frame_idx
         update_frame!(water_plot, ball_plot, frame_idx)
     end

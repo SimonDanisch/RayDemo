@@ -1,0 +1,191 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "radeon_8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "backend": "cpu",
+        "n_elements": 10000000,
+        "version": "v1",
+        "timestamp": "2026-04-07 11:53:35",
+        "julia_version": "1.12.5",
+        "cpu_threads": 32
+    },
+    "benchmarks": {
+        "sort/UInt32/acck": {
+            "median_ms": 63.057,
+            "min_ms": 43.393,
+            "timings_ms": [
+                43.393,
+                63.057,
+                111.201
+            ]
+        },
+        "sort/UInt32/base": {
+            "median_ms": 64.867,
+            "min_ms": 55.946,
+            "timings_ms": [
+                64.867,
+                72.009,
+                55.946
+            ]
+        },
+        "sort/Float32/acck": {
+            "median_ms": 81.123,
+            "min_ms": 78.407,
+            "timings_ms": [
+                78.407,
+                81.123,
+                119.458
+            ]
+        },
+        "sort/Float32/base": {
+            "median_ms": 68.55,
+            "min_ms": 68.445,
+            "timings_ms": [
+                68.445,
+                75.615,
+                68.55
+            ]
+        },
+        "reduce/UInt32/acck": {
+            "median_ms": 0.365,
+            "min_ms": 0.213,
+            "timings_ms": [
+                0.452,
+                0.365,
+                0.37,
+                0.312,
+                0.213
+            ]
+        },
+        "reduce/UInt32/base": {
+            "median_ms": 2.853,
+            "min_ms": 2.687,
+            "timings_ms": [
+                2.77,
+                19.395,
+                2.853,
+                8.359,
+                2.687
+            ]
+        },
+        "reduce/Float32/acck": {
+            "median_ms": 0.639,
+            "min_ms": 0.546,
+            "timings_ms": [
+                0.777,
+                0.546,
+                0.586,
+                0.639,
+                0.843
+            ]
+        },
+        "reduce/Float32/base": {
+            "median_ms": 17.85,
+            "min_ms": 8.315,
+            "timings_ms": [
+                8.425,
+                26.075,
+                17.85,
+                23.066,
+                8.315
+            ]
+        },
+        "accumulate/UInt32/acck": {
+            "median_ms": 13.243,
+            "min_ms": 3.002,
+            "timings_ms": [
+                3.087,
+                37.472,
+                13.243,
+                25.95,
+                3.002
+            ]
+        },
+        "accumulate/UInt32/base": {
+            "median_ms": 23.161,
+            "min_ms": 12.52,
+            "timings_ms": [
+                143.292,
+                26.37,
+                23.161,
+                12.52,
+                19.436
+            ]
+        },
+        "accumulate/Float32/acck": {
+            "median_ms": 14.74,
+            "min_ms": 3.424,
+            "timings_ms": [
+                3.424,
+                50.327,
+                14.74,
+                26.83,
+                3.756
+            ]
+        },
+        "accumulate/Float32/base": {
+            "median_ms": 34.744,
+            "min_ms": 25.231,
+            "timings_ms": [
+                84.295,
+                137.629,
+                33.036,
+                25.231,
+                34.744
+            ]
+        },
+        "map/Float32/acck_2x": {
+            "median_ms": 0.829,
+            "min_ms": 0.737,
+            "timings_ms": [
+                76.462,
+                0.9,
+                0.737,
+                0.751,
+                0.829
+            ]
+        },
+        "map/Float32/acck_sin": {
+            "median_ms": 4.834,
+            "min_ms": 4.547,
+            "timings_ms": [
+                4.806,
+                4.927,
+                4.834,
+                4.547,
+                4.976
+            ]
+        },
+        "mapreduce/Float32/acck_sin": {
+            "median_ms": 4.986,
+            "min_ms": 4.869,
+            "timings_ms": [
+                6.255,
+                4.986,
+                4.887,
+                5.349,
+                4.869
+            ]
+        },
+        "sortperm/UInt32/acck": {
+            "median_ms": 157.624,
+            "min_ms": 149.112,
+            "timings_ms": [
+                225.585,
+                157.624,
+                149.112
+            ]
+        },
+        "sortperm/Float32/acck": {
+            "median_ms": 238.755,
+            "min_ms": 231.149,
+            "timings_ms": [
+                253.669,
+                231.149,
+                238.755
+            ]
+        }
+    }
+}

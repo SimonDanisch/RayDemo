@@ -332,11 +332,12 @@ function render_scene(;
     s = create_scene(; n_boids=500, warmup_steps=120, resolution=resolution)
 
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth)
-    sensor = Hikari.FilmSensor(; iso=200, exposure_time=1.0, white_balance=0)
+    sensor = Hikari.PixelSensor(; iso=200, exposure_time=1.0, whitebalance=0)
+    integrator.sensor = sensor
 
     img = colorbuffer(s.scene;
         device=device, integrator=integrator,
-        tonemap=:aces, exposure=1.8f0, gamma=2.2f0, sensor=sensor,
+        tonemap=:aces, exposure=1.8f0, gamma=2.2f0,
     )
     save(output_path, img)
     @info "Saved → $output_path"
@@ -360,17 +361,18 @@ function render_video(;
     s = create_scene(; n_boids, resolution)
 
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth)
-    sensor = Hikari.FilmSensor(; iso=200, exposure_time=1.0, white_balance=0)
+    sensor = Hikari.PixelSensor(; iso=200, exposure_time=1.0, whitebalance=0)
+    integrator.sensor = sensor
 
     # Warm up
     colorbuffer(s.scene;
         device=device, integrator=integrator,
-        tonemap=:aces, exposure=1.8f0, gamma=2.2f0, sensor=sensor,
+        tonemap=:aces, exposure=1.8f0, gamma=2.2f0,
     )
 
     Makie.record_longrunning(s.scene, output_path, 1:nframes;
         framerate=framerate, device=device, integrator=integrator,
-        tonemap=:aces, exposure=1.8f0, gamma=2.2f0, sensor=sensor) do frame
+        tonemap=:aces, exposure=1.8f0, gamma=2.2f0) do frame
         step!(s.scheduler)
         Makie.update!(s.mplot; arg1=collect_positions(s.world))
         println("Frame $frame/$nframes")

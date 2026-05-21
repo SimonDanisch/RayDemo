@@ -155,7 +155,8 @@ function render_image(;
         max_component_value = 10f0,
         regularize = true, hw_accel = true,
     )
-    sensor = Hikari.FilmSensor(; iso=150, white_balance=7500)
+    sensor = Hikari.PixelSensor(; iso=150, whitebalance=7500)
+    integrator.sensor = sensor
 
     # First colorbuffer triggers Makie.center! — init then override camera
     @info "Initializing..."
@@ -171,7 +172,7 @@ function render_image(;
 
     @info "Rendering $(samples) spp with HW RT..."
     img = colorbuffer(ax.scene;
-        integrator, sensor,
+        integrator,
         tonemap = :aces, gamma = 2.2f0, exposure = 0.6f0,
     )
     return fig, img
@@ -183,8 +184,9 @@ function render_interactive(; resolution=(1600, 900), kwargs...)
         samples=1, max_depth=12,
         max_component_value=10f0, regularize=true, hw_accel=true,
     )
-    sensor = Hikari.FilmSensor(; iso=150, white_balance=7500)
-    vulkan_viewer(fig; integrator, sensor,
+    sensor = Hikari.PixelSensor(; iso=150, whitebalance=7500)
+    integrator.sensor = sensor
+    vulkan_viewer(fig; integrator,
         tonemap=:aces, gamma=2.2f0, exposure=0.6f0)
     return fig, ax
 end

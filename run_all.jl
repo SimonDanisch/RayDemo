@@ -12,6 +12,7 @@ function run_all(;
     samples=20,
     max_depth=6,
     nframes=10,
+    render_videos=true,
     output_folder=joinpath(@__DIR__, "all_renders"),
 )
     mkpath(output_folder)
@@ -50,7 +51,7 @@ function run_all(;
                 end
             end
 
-            if isdefined(m, :render_video)
+            if render_videos && isdefined(m, :render_video)
                 outpath = joinpath(output_folder, "$(dir)_$(name).mp4")
                 @info "  render_video → $outpath"
                 try

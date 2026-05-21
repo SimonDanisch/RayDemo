@@ -48,9 +48,10 @@ function render_scene(;
 )
     s = create_scene(joinpath(@__DIR__, "bomex_1024.nanovdb"); resolution=resolution)
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth)
-    sensor = Hikari.FilmSensor(iso=100, white_balance=6500)
+    sensor = Hikari.PixelSensor(iso=100, whitebalance=6500)
+    integrator.sensor = sensor
     result = Makie.colorbuffer(s;
-        device=device, integrator=integrator, sensor=sensor, update=false
+        device=device, integrator=integrator, update=false
     )
     save(output_path, result)
     @info "Saved → $output_path"

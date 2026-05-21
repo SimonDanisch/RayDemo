@@ -71,8 +71,9 @@ function render_scene(;
 )
     scene = create_scene(; resolution=resolution)
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth, max_component_value=1f0)
-    sensor = Hikari.FilmSensor(iso=300, white_balance=6500)
-    img = colorbuffer(scene; device=device, integrator=integrator, sensor=sensor)
+    sensor = Hikari.PixelSensor(iso=300, whitebalance=6500)
+    integrator.sensor = sensor
+    img = colorbuffer(scene; device=device, integrator=integrator)
     save(output_path, img)
     @info "Saved → $output_path"
     return img

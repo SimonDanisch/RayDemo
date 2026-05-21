@@ -1,0 +1,87 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "radeon_8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "radeon_8060s_graphics_radv_strix_halo",
+        "backend_name": "lava_sw",
+        "version": "v19",
+        "renderer": "raymakie",
+        "hw_accel": false,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-04-05 13:16:43",
+        "julia_version": "1.12.5",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "crown": {
+            "resolution": [
+                500,
+                700
+            ],
+            "samples": 16,
+            "max_depth": 12,
+            "hw_accel": false,
+            "timings": [
+                3.791381879,
+                3.736374806,
+                3.760641782
+            ],
+            "median": 3.7606,
+            "min": 3.7364,
+            "max": 3.7914
+        },
+        "bunny_cloud": {
+            "resolution": [
+                960,
+                540
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                3.091930293,
+                3.099451796,
+                3.120735898
+            ],
+            "median": 3.0995,
+            "min": 3.0919,
+            "max": 3.1207
+        },
+        "killeroo_gold": {
+            "resolution": [
+                684,
+                513
+            ],
+            "samples": 32,
+            "max_depth": 8,
+            "hw_accel": false,
+            "timings": [
+                2.161878126,
+                2.075492079,
+                2.068267763
+            ],
+            "median": 2.0755,
+            "min": 2.0683,
+            "max": 2.1619
+        },
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                2.622484715,
+                2.61361095,
+                2.641401134
+            ],
+            "median": 2.6225,
+            "min": 2.6136,
+            "max": 2.6414
+        }
+    }
+}

@@ -466,6 +466,19 @@ function run_julia_benchmarks(;
             end
         end
 
+        # Clean up GPU resources between scenes to prevent DEVICE_LOST from
+        # accumulated dispatch state. Close integrator + force GC + flush deferred frees.
+        try
+            Base.invokelatest(close, integrator)
+        catch; end
+        GC.gc(true)
+        if isdefined(Main, :Lava)
+            try
+                Main.Lava.vk_flush!()
+                Main.Lava.flush_deferred_frees!()
+            catch; end
+        end
+
         if !isempty(timings)
             scene_result = OrderedDict(
                 "resolution" => [cfg.resolution...],

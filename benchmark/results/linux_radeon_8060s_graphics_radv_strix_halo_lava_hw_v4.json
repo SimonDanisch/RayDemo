@@ -1,0 +1,22 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "radeon_8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "radeon_8060s_graphics_radv_strix_halo",
+        "backend_name": "lava_hw",
+        "version": "v4",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-04-04 23:00:05",
+        "julia_version": "1.12.5",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "materials": {
+            "error": "MethodError: no method matching invoke _hw_raygen(::Ptr{Raycore.RTRay}, ::Ptr{Raycore.RTHitResult})\nThe function `_hw_raygen` exists, but no method is defined for this combination of argument types.\n\nClosest candidates are:\n  _hw_raygen(!Matched::Ptr{RTRay}, !Matched::Ptr{RTHitResult})\n   @ Lava /sim/Programmieren/VulkanDev/dev/Lava/src/raytracing/raycore_compat.jl:161\n"
+        }
+    }
+}

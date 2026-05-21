@@ -1,0 +1,52 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "radeon_8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "radeon_8060s_graphics_radv_strix_halo",
+        "backend_name": "lava_hw",
+        "version": "v1",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 0,
+        "n_trials": 1,
+        "timestamp": "2026-04-07 12:11:23",
+        "julia_version": "1.12.5",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                90.950100113
+            ],
+            "median": 90.9501,
+            "min": 90.9501,
+            "max": 90.9501
+        },
+        "killeroo_gold": {
+            "resolution": [
+                684,
+                513
+            ],
+            "samples": 32,
+            "max_depth": 8,
+            "hw_accel": true,
+            "timings": [
+                10.697764494
+            ],
+            "median": 10.6978,
+            "min": 10.6978,
+            "max": 10.6978
+        },
+        "black_hole": {
+            "error": "LavaError during vkQueueSubmit:\n  Vulkan.VulkanError(\"failed to execute #= /home/simon/.julia/packages/Vulkan/dOCgf/generated/linux.jl:58864 =# @dispatch device(queue) vkQueueSubmit(queue, pointer_length(submits), submits, fence)\", Vulkan.ERROR_DEVICE_LOST) after 5705 dispatches in batch (42967 total, last_was_rt=false)\nCrashed batch dispatch: rt_indirect\nTriggered by recording: rt_indirect\nLast 1 validation message(s):\n  [1] vkQueueSubmit() failed (VK_ERROR_DEVICE_LOST)\nNo dispatches logged.\n  Suggestion: DEVICE_LOST usually means invalid SPIR-V, out-of-bounds BDA access, or GPU timeout (Xid 109). Check dispatch log above for the crashing kernel. Call Lava.vk_reset_device!() to reinitialize."
+        }
+    }
+}

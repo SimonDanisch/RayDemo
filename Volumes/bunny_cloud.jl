@@ -92,10 +92,9 @@ function render_scene(;
 )
     scene = create_scene(; resolution=resolution)
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth)
-    sensor = Hikari.FilmSensor(iso=50f0, white_balance=5000)
     @time img = colorbuffer(scene;
         device=device, integrator=integrator,
-        exposure=0.5, tonemap=nothing, gamma=2.2f0, sensor=sensor,
+        exposure=0.5, tonemap=nothing, gamma=2.2f0,
     )
     mkpath(dirname(output_path))
     save(output_path, img)
@@ -108,5 +107,5 @@ end
 if abspath(PROGRAM_FILE) == @__FILE__
     scene = create_scene(; resolution=(1920, 1080))
     sensor = Hikari.PixelSensor(sensor="nikon_d850", iso=90f0, whitebalance=5000f0)
-    RayMakie.vulkan_viewer(scene; sensor)
+    RayMakie.vulkan_viewer(scene; integrator=Hikari.VolPath(; hw_accel=true, sensor))
 end

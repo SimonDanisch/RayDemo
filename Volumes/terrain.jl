@@ -312,9 +312,10 @@ function render_scene(;
         figsize=resolution,
     )
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth)
-    sensor = Hikari.FilmSensor(iso=50, white_balance=6500)
+    sensor = Hikari.PixelSensor(iso=50, whitebalance=6500)
+    integrator.sensor = sensor
     @time result = Makie.colorbuffer(scene;
-        device=device, integrator=integrator, sensor=sensor,
+        device=device, integrator=integrator,
         exposure=1f0, tonemap=:aces, gamma=2.0f0, update=false,
     )
     save(output_path, result)

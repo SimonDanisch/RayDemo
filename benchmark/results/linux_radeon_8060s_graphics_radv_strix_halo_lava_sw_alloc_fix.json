@@ -1,0 +1,104 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "radeon_8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "radeon_8060s_graphics_radv_strix_halo",
+        "backend_name": "lava_sw",
+        "version": "alloc_fix",
+        "renderer": "raymakie",
+        "hw_accel": false,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-04-09 15:57:38",
+        "julia_version": "1.12.5",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                2.818600583,
+                2.661428714,
+                2.60522433
+            ],
+            "median": 2.6614,
+            "min": 2.6052,
+            "max": 2.8186
+        },
+        "killeroo_gold": {
+            "resolution": [
+                684,
+                513
+            ],
+            "samples": 32,
+            "max_depth": 8,
+            "hw_accel": false,
+            "timings": [
+                2.197123286,
+                2.231430734,
+                2.141813388
+            ],
+            "median": 2.1971,
+            "min": 2.1418,
+            "max": 2.2314
+        },
+        "black_hole": {
+            "resolution": [
+                800,
+                450
+            ],
+            "samples": 32,
+            "max_depth": 100,
+            "hw_accel": false,
+            "timings": [
+                4.407312961,
+                4.43709192,
+                4.456470575
+            ],
+            "median": 4.4371,
+            "min": 4.4073,
+            "max": 4.4565
+        },
+        "bunny_cloud": {
+            "resolution": [
+                960,
+                540
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                3.299837113,
+                3.312767005,
+                3.281746984
+            ],
+            "median": 3.2998,
+            "min": 3.2817,
+            "max": 3.3128
+        },
+        "crown": {
+            "resolution": [
+                500,
+                700
+            ],
+            "samples": 16,
+            "max_depth": 12,
+            "hw_accel": false,
+            "timings": [
+                3.810968332,
+                3.80290486,
+                3.790907242
+            ],
+            "median": 3.8029,
+            "min": 3.7909,
+            "max": 3.811
+        }
+    }
+}

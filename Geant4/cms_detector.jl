@@ -175,14 +175,14 @@ function render_scene(;
     )
 
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth)
-    sensor = Hikari.FilmSensor(iso=100, white_balance=6500)
+    sensor = Hikari.PixelSensor(iso=100, whitebalance=6500)
+    integrator.sensor = sensor
 
     println("Rendering with GPU, $samples samples...")
     @time result = Makie.colorbuffer(ax_trace.scene;
         device=device,
         integrator=integrator,
         tonemap=:aces,
-        sensor=sensor,
         update=false
     )
 

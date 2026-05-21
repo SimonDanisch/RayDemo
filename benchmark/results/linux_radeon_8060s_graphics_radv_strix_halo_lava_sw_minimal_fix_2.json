@@ -1,0 +1,64 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "radeon_8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "radeon_8060s_graphics_radv_strix_halo",
+        "backend_name": "lava_sw",
+        "version": "minimal_fix_2",
+        "renderer": "raymakie",
+        "hw_accel": false,
+        "n_warmup": 0,
+        "n_trials": 1,
+        "timestamp": "2026-04-08 14:16:54",
+        "julia_version": "1.12.5",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                205.520268598
+            ],
+            "median": 205.5203,
+            "min": 205.5203,
+            "max": 205.5203
+        },
+        "killeroo_gold": {
+            "resolution": [
+                684,
+                513
+            ],
+            "samples": 32,
+            "max_depth": 8,
+            "hw_accel": false,
+            "timings": [
+                15.685505261
+            ],
+            "median": 15.6855,
+            "min": 15.6855,
+            "max": 15.6855
+        },
+        "black_hole": {
+            "resolution": [
+                800,
+                450
+            ],
+            "samples": 32,
+            "max_depth": 100,
+            "hw_accel": false,
+            "timings": [
+                19.22783615
+            ],
+            "median": 19.2278,
+            "min": 19.2278,
+            "max": 19.2278
+        }
+    }
+}

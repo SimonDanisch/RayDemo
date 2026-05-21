@@ -1,0 +1,90 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "radeon_8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "radeon_8060s_graphics_radv_strix_halo",
+        "backend_name": "lava_hw",
+        "version": "v20",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-04-25 22:25:02",
+        "julia_version": "1.12.6",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "crown": {
+            "error": "LoadError: UndefVarError: `DEFERRED_FREE_WARN_THRESHOLD` not defined in `Lava`\nSuggestion: check for spelling errors or missing imports.\nin expression starting at /sim/Programmieren/VulkanDev/RayDemo/Crown/crown.jl:4"
+        },
+        "bunny_cloud": {
+            "resolution": [
+                960,
+                540
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                8.467972823,
+                8.614825663,
+                8.3986913
+            ],
+            "median": 8.468,
+            "min": 8.3987,
+            "max": 8.6148
+        },
+        "killeroo_gold": {
+            "resolution": [
+                684,
+                513
+            ],
+            "samples": 32,
+            "max_depth": 8,
+            "hw_accel": true,
+            "timings": [
+                4.218405815,
+                4.133263487,
+                4.076943441
+            ],
+            "median": 4.1333,
+            "min": 4.0769,
+            "max": 4.2184
+        },
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                7.762155595,
+                7.682460972,
+                7.716606662
+            ],
+            "median": 7.7166,
+            "min": 7.6825,
+            "max": 7.7622
+        },
+        "black_hole": {
+            "resolution": [
+                800,
+                450
+            ],
+            "samples": 32,
+            "max_depth": 100,
+            "hw_accel": true,
+            "timings": [
+                13.287889027,
+                13.34615331,
+                13.430849669
+            ],
+            "median": 13.3462,
+            "min": 13.2879,
+            "max": 13.4308
+        }
+    }
+}

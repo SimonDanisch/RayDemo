@@ -165,5 +165,5 @@ on(play_btn.clicks) do _
 end
 
 Makie.update_state_before_display!(fig)
-sensor = Hikari.FilmSensor(iso = 10, white_balance = 6500)
-RayMakie.vulkan_viewer(fig; sensor = sensor)
+sensor = Hikari.PixelSensor(iso = 10, whitebalance = 6500)
+RayMakie.vulkan_viewer(fig; integrator = Hikari.VolPath(; hw_accel = true, sensor = sensor))

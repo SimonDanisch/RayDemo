@@ -1,0 +1,62 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "8060s_graphics_radv_strix_halo",
+        "backend_name": "lava_sw",
+        "version": "v24",
+        "renderer": "raymakie",
+        "hw_accel": false,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-05-05 15:03:44",
+        "julia_version": "1.12.6",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "crown": {
+            "error": "AssertionError: site.access_type isa LLVM.IntegerType"
+        },
+        "bunny_cloud": {
+            "resolution": [
+                960,
+                540
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                2.275458616,
+                2.361845989,
+                2.507192434
+            ],
+            "median": 2.3618,
+            "min": 2.2755,
+            "max": 2.5072
+        },
+        "killeroo_gold": {
+            "error": "AssertionError: site.access_type isa LLVM.IntegerType"
+        },
+        "materials": {
+            "error": "AssertionError: site.access_type isa LLVM.IntegerType"
+        },
+        "black_hole": {
+            "resolution": [
+                800,
+                450
+            ],
+            "samples": 32,
+            "max_depth": 100,
+            "hw_accel": false,
+            "timings": [
+                2.543935458,
+                2.550027238,
+                2.706392819
+            ],
+            "median": 2.55,
+            "min": 2.5439,
+            "max": 2.7064
+        }
+    }
+}

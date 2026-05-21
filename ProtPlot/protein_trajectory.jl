@@ -13,7 +13,8 @@ function render_video(;
 )
     i = 15
     integrator = Hikari.VolPath(samples=samples, max_depth=max_depth)
-    sensor = Hikari.FilmSensor(iso=100, white_balance=6500)
+    sensor = Hikari.PixelSensor(iso=100, whitebalance=6500)
+    integrator.sensor = sensor
     dir = "samp_$(string(i, pad=5))"
     tracks = reverse([r for r in readdir(joinpath(basedir, dir), join=true) if r[end] != 'e'])
     set_theme!(lights=[Makie.SunSkyLight(Vec3f(0.4, -0.3, 0.7); intensity=1.0f0, turbidity=3.0f0, ground_enabled=false)])

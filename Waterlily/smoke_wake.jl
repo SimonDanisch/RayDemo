@@ -177,7 +177,8 @@ function record_animation(sim, params=PARAMS;
         max_component_value=10f0,
         regularize=true,
     )
-    sensor = Hikari.FilmSensor(; iso=iso, white_balance=6500)
+    sensor = Hikari.PixelSensor(; iso=iso, whitebalance=6500)
+    integrator.sensor = sensor
 
     # Time range for animation
     t₀ = WaterLily.sim_time(sim)
@@ -186,11 +187,11 @@ function record_animation(sim, params=PARAMS;
     # Precompute threshold from build_scene defaults (or kwargs)
     vorticity_threshold = get(kwargs, :vorticity_threshold, 0.05f0)
     @info "Recording $n_total frames to $filename"
-    colorbuffer(ax.scene; device=device, integrator=integrator, sensor=sensor,
+    colorbuffer(ax.scene; device=device, integrator=integrator,
         exposure=exposure, tonemap=tonemap, gamma=gamma, update=false)  # warm up GPU and cache shaders
     Makie.record_longrunning(ax.scene, filename, enumerate(times); overwrite=true, update=false,
         framerate=framerate, compression=compression,
-        device=device, integrator=integrator, sensor=sensor,
+        device=device, integrator=integrator,
         exposure=exposure, tonemap=tonemap, gamma=gamma) do (i, t)
 
         # Advance simulation
@@ -237,7 +238,7 @@ end
 # vorticity = extract_vorticity(sim)
 # fig, ax, _ = build_scene(vorticity, PARAMS; kwargs...)
 # integrator = Hikari.VolPath(; samples=10, max_depth=100, max_component_value=10f0, regularize=true)
-# sensor = Hikari.FilmSensor(; iso=100, white_balance=6500)
-# img = Makie.colorbuffer(ax.scene; device=DEVICE, integrator=integrator, sensor=sensor, exposure=0.6f0, tonemap=:aces, gamma=2.2f0)
+# sensor = Hikari.PixelSensor(; iso=100, whitebalance=6500)
+# img = Makie.colorbuffer(ax.scene; device=DEVICE, integrator=integrator, exposure=0.6f0, tonemap=:aces, gamma=2.2f0)
 
 # render_video()
