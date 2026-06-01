@@ -6,12 +6,22 @@ Demo scenes for [RayMakie](https://github.com/MakieOrg/Makie.jl/tree/sd/hikari/R
 
 ![RayDemo Benchmarks on 7900 XTX](benchmark/results/plots/7900xtx.png)
 
-Render times and compute kernel benchmarks on AMD RX 7900 XTX / Ryzen 9 7900X. Compares three backends:
+Render times on AMD RX 7900 XTX / Ryzen 9 7900X, comparing three backends:
 - **Lava HW RT** — [Lava.jl](https://github.com/SimonDanisch/Lava.jl) with hardware ray tracing (`VK_KHR_ray_tracing_pipeline`)
 - **Lava SW** — Lava.jl with software BVH traversal (compute shaders only)
 - **AMDGPU** — [AMDGPU.jl](https://github.com/JuliaGPU/AMDGPU.jl) via ROCm/HIP
 
-Lava SW is **1.4-2.5x faster than AMDGPU** across all scenes. Hardware RT adds another **1.0-2.3x** on geometry-heavy scenes. Bottom row: AcceleratedKernels.jl compute benchmarks at 10M and 100M elements — Lava is up to **23x faster** on dispatch-sensitive workloads.
+Median of 3 trials (after 1 warmup), in seconds. Speedups in parentheses are relative to AMDGPU.
+
+| Scene | Resolution | spp | AMDGPU | Lava SW | Lava HW RT |
+|---|---|---:|---:|---:|---:|
+| Crown | 500×700 | 16 | 1.08 s | 0.97 s (1.1×) | **0.52 s (2.1×)** |
+| Killeroo (gold) | 684×513 | 32 | 0.76 s | 0.55 s (1.4×) | **0.44 s (1.7×)** |
+| Materials | 1200×900 | 10 | 1.53 s | 0.49 s (3.1×) | **0.40 s (3.8×)** |
+| Bunny cloud | 960×540 | 8 | 2.25 s | **1.07 s (2.1×)** | 1.03 s (2.2×) |
+| Black hole | 800×450 | 32 | 4.25 s | **1.70 s (2.5×)** | 1.76 s (2.4×) |
+
+Lava SW is **1.1–3.1× faster than AMDGPU** across all scenes. Hardware RT adds up to a further **1.9×** on geometry-heavy scenes (Crown, Killeroo, Materials). On the volumetric scenes (Bunny cloud, Black hole), where ray marching through participating media dominates the cost, HW and SW perform about the same.
 
 Full benchmark data in [`benchmark/results/`](benchmark/results/).
 
