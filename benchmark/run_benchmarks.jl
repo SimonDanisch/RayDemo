@@ -22,12 +22,19 @@ const BENCHMARK_RESULTS_DIR = joinpath(@__DIR__, "results")
 # Scene Registry
 # =============================================================================
 
+# Scene configs.  RULE: for any scene with a `pbrt_file`, `resolution` and
+# `max_depth` MUST match the .pbrt file (`xresolution`/`yresolution` and
+# `Integrator "..."`/`"integer maxdepth"`; pbrt's default maxdepth is 5).
+# `samples` is the override fed both to VolPath and to pbrt via `--spp`.
+# `assert_pbrt_match` (below) is called at benchmark start and refuses to run
+# if any of these fall out of sync — never run the pbrt comparison with a
+# mismatched workload again.
 const BENCHMARK_SCENES = OrderedDict(
     "crown" => (
         script = joinpath(RAYDEMO_DIR, "Crown", "crown.jl"),
-        resolution = (500, 700),
+        resolution = (1000, 1400),    # matches crown.pbrt
         samples = 16,
-        max_depth = 12,
+        max_depth = 100,              # matches crown.pbrt "integer maxdepth" 100
         colorbuffer_kwargs = (; exposure=1.0f0, tonemap=:aces, gamma=2.2f0),
         # crown.pbrt: sensor "canon_eos_5d_mkiv" iso 150
         sensor_kwargs = (; sensor="canon_eos_5d_mkiv", iso=150),
@@ -37,9 +44,9 @@ const BENCHMARK_SCENES = OrderedDict(
     ),
     "bunny_cloud" => (
         script = joinpath(RAYDEMO_DIR, "Volumes", "bunny_cloud.jl"),
-        resolution = (960, 540),
+        resolution = (1920, 1080),    # matches bunny-cloud.pbrt
         samples = 8,
-        max_depth = 50,
+        max_depth = 50,               # matches bunny-cloud.pbrt
         colorbuffer_kwargs = (; exposure=0.5, tonemap=nothing, gamma=2.2f0),
         # bunny-cloud.pbrt: sensor "nikon_d850" iso 90 whitebalance 5000
         sensor_kwargs = (; sensor="nikon_d850", iso=90, whitebalance=5000),
@@ -48,9 +55,9 @@ const BENCHMARK_SCENES = OrderedDict(
     ),
     "killeroo_gold" => (
         script = joinpath(RAYDEMO_DIR, "KillerooGold", "killeroo_gold.jl"),
-        resolution = (684, 513),
+        resolution = (1368, 1026),    # matches killeroo-gold.pbrt
         samples = 32,
-        max_depth = 8,
+        max_depth = 5,                # killeroo-gold.pbrt has no explicit maxdepth → pbrt default 5
         colorbuffer_kwargs = (; exposure=1.0f0, tonemap=:aces, gamma=2.2f0),
         # killeroo-gold.pbrt: no Film sensor override → pbrt defaults (cie1931, iso 100).
         sensor_kwargs = (; iso=100),
@@ -59,9 +66,9 @@ const BENCHMARK_SCENES = OrderedDict(
     ),
     "materials" => (
         script = joinpath(RAYDEMO_DIR, "Materials", "materials.jl"),
-        resolution = (1200, 900),
+        resolution = (1200, 900),     # matches materials.pbrt
         samples = 10,
-        max_depth = 8,
+        max_depth = 50,               # matches materials.pbrt
         colorbuffer_kwargs = (; exposure=0.6f0, tonemap=:aces, gamma=2.2f0),
         # materials.pbrt: no Film sensor override → pbrt defaults (cie1931, iso 100).
         sensor_kwargs = (; iso=100),
@@ -79,6 +86,75 @@ const BENCHMARK_SCENES = OrderedDict(
         pbrt_file = nothing,
     ),
 )
+
+# =============================================================================
+# .pbrt scene parsing + Lava↔pbrt config consistency check
+# =============================================================================
+
+"""
+    parse_pbrt_scene(path) -> NamedTuple
+
+Pull `xresolution`, `yresolution`, optional `pixelsamples`, optional
+`maxdepth` out of a .pbrt file.  pbrt's default maxdepth (when the
+`Integrator` line has no `"integer maxdepth"` parameter) is 5, so callers
+should treat `maxdepth === nothing` as 5.
+"""
+function parse_pbrt_scene(path::AbstractString)
+    text = read(path, String)
+    function find_int(key)
+        m = match(Regex("\"integer $(key)\"\\s*\\[?\\s*(-?\\d+)\\s*\\]?"), text)
+        m === nothing ? nothing : parse(Int, m.captures[1])
+    end
+    return (
+        xresolution = find_int("xresolution"),
+        yresolution = find_int("yresolution"),
+        pixelsamples = find_int("pixelsamples"),
+        maxdepth = find_int("maxdepth"),
+    )
+end
+
+const PBRT_DEFAULT_MAXDEPTH = 5
+
+"""
+    assert_pbrt_match(scenes)
+
+For every scene in `scenes` that has a `pbrt_file`, confirm that the
+benchmark's `resolution` and `max_depth` match the .pbrt file's
+`xresolution`/`yresolution` and `maxdepth` (using pbrt's default of 5 when
+the .pbrt has no explicit maxdepth).  Errors loudly on any mismatch — pbrt
+renders at its file's settings, Julia renders at the benchmark config's,
+and running the two harnesses with different workloads makes the
+comparison meaningless.
+
+This is called automatically at the top of `run_julia_benchmarks` and
+`run_pbrt_benchmarks` so it's not possible to silently run a mismatched
+comparison.
+"""
+function assert_pbrt_match(scenes::Vector{<:AbstractString} = collect(keys(BENCHMARK_SCENES)))
+    bad = String[]
+    for name in scenes
+        haskey(BENCHMARK_SCENES, name) || continue
+        cfg = BENCHMARK_SCENES[name]
+        cfg.pbrt_file === nothing && continue
+        path = joinpath(cfg.pbrt_dir, cfg.pbrt_file)
+        isfile(path) || (push!(bad, "$name: .pbrt missing at $path"); continue)
+        s = parse_pbrt_scene(path)
+        pbrt_x = s.xresolution; pbrt_y = s.yresolution
+        pbrt_md = something(s.maxdepth, PBRT_DEFAULT_MAXDEPTH)
+        cfg_x, cfg_y = cfg.resolution
+        if (pbrt_x, pbrt_y) != (cfg_x, cfg_y)
+            push!(bad, "$name: resolution mismatch — .pbrt $(pbrt_x)x$(pbrt_y), config $(cfg_x)x$(cfg_y)")
+        end
+        if pbrt_md != cfg.max_depth
+            push!(bad, "$name: max_depth mismatch — .pbrt $(pbrt_md), config $(cfg.max_depth)")
+        end
+    end
+    isempty(bad) && return nothing
+    error("Lava↔pbrt benchmark config mismatch — refusing to run an apples-to-oranges comparison:\n  " *
+          join(bad, "\n  ") *
+          "\n\nEither bump BENCHMARK_SCENES to match the .pbrt files, or edit the .pbrt files to match. " *
+          "Do not silence this check.")
+end
 
 # =============================================================================
 # System Detection
@@ -361,6 +437,13 @@ function run_julia_benchmarks(;
     output_dir::String = BENCHMARK_RESULTS_DIR,
 )
     mkpath(output_dir)
+
+    # Refuse to run if the Julia configs no longer match the .pbrt files for
+    # scenes that have a pbrt counterpart.  This is symmetric with
+    # `run_pbrt_benchmarks` — neither harness is allowed to drift from the
+    # other.
+    assert_pbrt_match(scenes)
+
     device_name = device_name_for_backend(backend_name, gpu_name, cpu_name)
     prefix = "$(platform)_$(device_name)_$(backend_name)"
 
@@ -532,6 +615,10 @@ function run_pbrt_benchmarks(;
     mkpath(output_dir)
     isfile(pbrt_binary) || error("pbrt-v4 not found at $pbrt_binary. Set PBRT_PATH env var or pass pbrt_binary kwarg.")
 
+    # Refuse to run the comparison if the .pbrt scene files no longer match the
+    # benchmark configs that the Julia harness uses.
+    assert_pbrt_match(scenes)
+
     backend_name = "pbrt_$(pbrt_mode)"
     device_name = device_name_for_backend(backend_name, gpu_name, cpu_name)
     prefix = "$(platform)_$(device_name)_$(backend_name)"
@@ -578,29 +665,68 @@ function run_pbrt_benchmarks(;
         outfile = joinpath(scene_dir, "output", "$(scene_name)_pbrt_$(pbrt_mode).exr")
         mkpath(dirname(outfile))
 
+        # Build the pbrt command.  We deliberately do NOT pass `--quiet` because
+        # the render-only `Total rendering time:` line we need only prints with
+        # `--stats`.  Output is captured and parsed below.
         cmd_parts = [pbrt_binary]
         pbrt_mode == "gpu" && push!(cmd_parts, "--gpu")
-        append!(cmd_parts, ["--spp", string(spp), "--quiet", "--outfile", outfile, pbrt_file])
+        append!(cmd_parts, ["--spp", string(spp), "--stats", "--outfile", outfile, pbrt_file])
+
+        # Resolution/maxdepth come from the .pbrt scene file.  `assert_pbrt_match`
+        # above already verified those equal what the Julia harness uses; surface
+        # them in the metadata so old result JSONs can be told apart.
+        s = parse_pbrt_scene(joinpath(pbrt_dir, pbrt_file))
+        pbrt_x, pbrt_y = s.xresolution, s.yresolution
+        pbrt_md = something(s.maxdepth, PBRT_DEFAULT_MAXDEPTH)
+
+        # `pbrt --stats` prints a `Total rendering time: <X> [ms|s|min|h]` line
+        # AFTER the render — wall-clock time spent inside the integrator,
+        # excluding `.pbrt` parse, BVH/OptiX build, and EXR write.  That's what
+        # we record; the wall time of the full binary (`@elapsed run(...)`) is
+        # NOT comparable to the Lava harness's `colorbuffer` time.
+        function parse_total_render_time(text::AbstractString)
+            m = match(r"Total rendering time:\s*([\d.]+)\s*(ms|s|min|h)", text)
+            m === nothing && return nothing
+            val = parse(Float64, m.captures[1])
+            unit = m.captures[2]
+            unit == "ms"  && return val / 1000.0
+            unit == "s"   && return val
+            unit == "min" && return val * 60.0
+            unit == "h"   && return val * 3600.0
+            return nothing
+        end
 
         # Warmup
         println("  Warmup ($n_warmup)...")
         for i in 1:n_warmup
             try
-                run(Cmd(Cmd(cmd_parts); dir=pbrt_dir))
+                read(Cmd(Cmd(cmd_parts); dir=pbrt_dir), String)
             catch e
                 @warn "  Warmup $i failed" exception=(e, catch_backtrace())
             end
         end
 
-        # Timed trials
-        println("  Benchmarking ($n_trials trials)...")
-        timings = Float64[]
+        # Timed trials.  Render-only time comes from --stats; we also keep
+        # wall-clock time so regressions in parse + AS build are visible.
+        println("  Benchmarking ($n_trials trials, render-only via --stats)...")
+        timings = Float64[]       # render-only seconds (Total rendering time)
+        wall_timings = Float64[]  # whole-binary wall-clock seconds
         bench_error = nothing
         for trial in 1:n_trials
             try
-                t = @elapsed run(Cmd(Cmd(cmd_parts); dir=pbrt_dir))
-                push!(timings, t)
-                println("    Trial $trial: $(round(t, digits=3))s")
+                out = IOBuffer()
+                t_wall = @elapsed begin
+                    out = read(pipeline(Cmd(Cmd(cmd_parts); dir=pbrt_dir); stderr=stdout), String)
+                end
+                push!(wall_timings, t_wall)
+                t_render = parse_total_render_time(out)
+                if t_render === nothing
+                    bench_error = "could not parse 'Total rendering time' from --stats output"
+                    @warn "  Trial $trial: $bench_error"
+                    break
+                end
+                push!(timings, t_render)
+                println("    Trial $trial: render=$(round(t_render, digits=3))s  wall=$(round(t_wall, digits=3))s")
             catch e
                 bench_error = sprint(showerror, e)
                 @warn "  Trial $trial failed" exception=(e, catch_backtrace())
@@ -610,16 +736,19 @@ function run_pbrt_benchmarks(;
 
         if !isempty(timings)
             scene_result = OrderedDict(
-                "resolution" => "native",  # pbrt uses its own resolution from .pbrt file
+                "resolution" => [pbrt_x, pbrt_y],
                 "samples" => spp,
+                "max_depth" => pbrt_md,
                 "pbrt_mode" => pbrt_mode,
                 "timings" => timings,
+                "wall_timings" => wall_timings,
                 "median" => round(_median(sort(timings)), digits=4),
                 "min" => round(minimum(timings), digits=4),
                 "max" => round(maximum(timings), digits=4),
+                "wall_median" => round(_median(sort(wall_timings)), digits=4),
             )
             results["scenes"][scene_name] = scene_result
-            println("  => median=$(scene_result["median"])s  min=$(scene_result["min"])s")
+            println("  => median=$(scene_result["median"])s  min=$(scene_result["min"])s  (wall median=$(scene_result["wall_median"])s)")
         else
             results["scenes"][scene_name] = OrderedDict("error" => something(bench_error, "no timings"))
             println("  => FAILED")

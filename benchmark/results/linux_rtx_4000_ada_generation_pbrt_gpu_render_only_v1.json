@@ -1,0 +1,119 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "rtx_4000_ada_generation",
+        "cpu_name": "7900x",
+        "device_name": "rtx_4000_ada_generation",
+        "backend_name": "pbrt_gpu",
+        "version": "render_only_v1",
+        "renderer": "pbrt-v4",
+        "pbrt_mode": "gpu",
+        "pbrt_binary": "/sim/Programmieren/RayTracing/pbrt-v4/build/pbrt",
+        "n_warmup": 1,
+        "n_trials": 4,
+        "timestamp": "2026-06-03 17:19:25",
+        "cpu_threads": 24
+    },
+    "scenes": {
+        "killeroo_gold": {
+            "resolution": [
+                1368,
+                1026
+            ],
+            "samples": 32,
+            "max_depth": 5,
+            "pbrt_mode": "gpu",
+            "timings": [
+                1.0728,
+                0.71269,
+                0.80318,
+                0.75558
+            ],
+            "wall_timings": [
+                2.250367912,
+                1.863568158,
+                1.958454366,
+                1.78546001
+            ],
+            "median": 0.7794,
+            "min": 0.7127,
+            "max": 1.0728,
+            "wall_median": 1.911
+        },
+        "crown": {
+            "resolution": [
+                1000,
+                1400
+            ],
+            "samples": 16,
+            "max_depth": 100,
+            "pbrt_mode": "gpu",
+            "timings": [
+                1.67607,
+                1.68231,
+                1.67657,
+                1.67926
+            ],
+            "wall_timings": [
+                2.700388318,
+                2.807167243,
+                2.819309389,
+                2.688757561
+            ],
+            "median": 1.6779,
+            "min": 1.6761,
+            "max": 1.6823,
+            "wall_median": 2.7538
+        },
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "pbrt_mode": "gpu",
+            "timings": [
+                2.80885,
+                2.81123,
+                2.81641,
+                2.81698
+            ],
+            "wall_timings": [
+                3.930692018,
+                4.040923422,
+                4.026013831,
+                3.998260549
+            ],
+            "median": 2.8138,
+            "min": 2.8088,
+            "max": 2.817,
+            "wall_median": 4.0121
+        },
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "pbrt_mode": "gpu",
+            "timings": [
+                1.00401,
+                1.01084,
+                1.00813,
+                1.00825
+            ],
+            "wall_timings": [
+                1.702489926,
+                1.80303931,
+                1.813995752,
+                1.705676627
+            ],
+            "median": 1.0082,
+            "min": 1.004,
+            "max": 1.0108,
+            "wall_median": 1.7544
+        }
+    }
+}
