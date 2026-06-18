@@ -1,0 +1,91 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "rtx_4000_ada_generation",
+        "cpu_name": "7900x",
+        "device_name": "rtx_4000_ada_generation",
+        "backend_name": "lava_hw",
+        "version": "zsobol_nbase4_loop",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 4,
+        "timestamp": "2026-06-03 22:40:08",
+        "julia_version": "1.12.6",
+        "cpu_threads": 24
+    },
+    "scenes": {
+        "killeroo_gold": {
+            "resolution": [
+                1368,
+                1026
+            ],
+            "samples": 32,
+            "max_depth": 5,
+            "hw_accel": true,
+            "timings": [
+                1.482888259,
+                1.487464836,
+                1.486046202,
+                1.487804955
+            ],
+            "median": 1.4868,
+            "min": 1.4829,
+            "max": 1.4878
+        },
+        "crown": {
+            "resolution": [
+                1000,
+                1400
+            ],
+            "samples": 16,
+            "max_depth": 100,
+            "hw_accel": true,
+            "timings": [
+                3.157394372,
+                3.156975071,
+                3.156847007,
+                3.153889659
+            ],
+            "median": 3.1569,
+            "min": 3.1539,
+            "max": 3.1574
+        },
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                1.880142504,
+                1.876894031,
+                1.87923382,
+                1.877777726
+            ],
+            "median": 1.8785,
+            "min": 1.8769,
+            "max": 1.8801
+        },
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                0.806181577,
+                0.801900071,
+                0.801761903,
+                0.802206206
+            ],
+            "median": 0.8021,
+            "min": 0.8018,
+            "max": 0.8062
+        }
+    }
+}

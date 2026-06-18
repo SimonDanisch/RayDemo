@@ -1,0 +1,129 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "rtx_4000_ada_generation",
+        "cpu_name": "7900x",
+        "device_name": "rtx_4000_ada_generation",
+        "backend": "lava",
+        "n_elements": 100000000,
+        "version": "v1",
+        "timestamp": "2026-06-01 18:38:32",
+        "julia_version": "1.12.6",
+        "cpu_threads": 24
+    },
+    "benchmarks": {
+        "sort/UInt32/acck": {
+            "median_ms": 130.218,
+            "min_ms": 129.386,
+            "timings_ms": [
+                131.601,
+                130.218,
+                129.386
+            ]
+        },
+        "sort/Float32/acck": {
+            "median_ms": 158.075,
+            "min_ms": 157.703,
+            "timings_ms": [
+                157.703,
+                160.448,
+                158.075
+            ]
+        },
+        "reduce/UInt32/acck": {
+            "median_ms": 1.285,
+            "min_ms": 1.247,
+            "timings_ms": [
+                1.285,
+                1.301,
+                1.263,
+                1.247,
+                1.289
+            ]
+        },
+        "reduce/Float32/acck": {
+            "median_ms": 1.277,
+            "min_ms": 1.257,
+            "timings_ms": [
+                1.325,
+                1.277,
+                1.266,
+                1.257,
+                1.286
+            ]
+        },
+        "accumulate/UInt32/acck": {
+            "median_ms": 51.102,
+            "min_ms": 35.455,
+            "timings_ms": [
+                76.048,
+                51.102,
+                184.46,
+                46.439,
+                35.455
+            ]
+        },
+        "accumulate/Float32/acck": {
+            "median_ms": 45.959,
+            "min_ms": 34.068,
+            "timings_ms": [
+                142.387,
+                45.959,
+                34.068,
+                34.118,
+                51.485
+            ]
+        },
+        "map/Float32/acck_2x": {
+            "median_ms": 2.716,
+            "min_ms": 2.696,
+            "timings_ms": [
+                28.819,
+                2.716,
+                2.803,
+                2.705,
+                2.696
+            ]
+        },
+        "map/Float32/acck_sin": {
+            "median_ms": 2.737,
+            "min_ms": 2.696,
+            "timings_ms": [
+                2.804,
+                2.696,
+                2.737,
+                2.8,
+                2.696
+            ]
+        },
+        "mapreduce/Float32/acck_sin": {
+            "median_ms": 1.282,
+            "min_ms": 1.262,
+            "timings_ms": [
+                1.327,
+                1.301,
+                1.269,
+                1.262,
+                1.282
+            ]
+        },
+        "sortperm/UInt32/acck": {
+            "median_ms": 446.3,
+            "min_ms": 445.605,
+            "timings_ms": [
+                446.591,
+                446.3,
+                445.605
+            ]
+        },
+        "sortperm/Float32/acck": {
+            "median_ms": 447.89,
+            "min_ms": 447.42,
+            "timings_ms": [
+                447.89,
+                448.664,
+                447.42
+            ]
+        }
+    }
+}

@@ -1,0 +1,61 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "rtx_4000_ada_generation",
+        "cpu_name": "7900x",
+        "device_name": "rtx_4000_ada_generation",
+        "backend_name": "lava_hw",
+        "version": "permat_plus_fillgroup_v1",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 4,
+        "timestamp": "2026-06-04 05:26:35",
+        "julia_version": "1.12.6",
+        "cpu_threads": 24
+    },
+    "scenes": {
+        "killeroo_gold": {
+            "resolution": [
+                1368,
+                1026
+            ],
+            "samples": 32,
+            "max_depth": 5,
+            "hw_accel": true,
+            "timings": [
+                2.001538525,
+                2.003665627,
+                2.005041923,
+                2.005058005
+            ],
+            "median": 2.0044,
+            "min": 2.0015,
+            "max": 2.0051
+        },
+        "materials": {
+            "error": "LavaError during memory allocation:\n  Out of GPU memory. Requested 325 MiB (341280000 bytes), currently 16311 MiB live in 154 buffers.\n  Suggestion: Free unused LavaArrays, reduce problem size, or check for memory leaks with Lava.gpu_memory_usage()."
+        },
+        "crown": {
+            "error": "LavaError during memory allocation:\n  Out of GPU memory. Requested 421 MiB (442400000 bytes), currently 17138 MiB live in 3233 buffers.\n  Suggestion: Free unused LavaArrays, reduce problem size, or check for memory leaks with Lava.gpu_memory_usage()."
+        },
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                43.145947202,
+                2.119079748,
+                2.121499716,
+                2.122111887
+            ],
+            "median": 2.1218,
+            "min": 2.1191,
+            "max": 43.1459
+        }
+    }
+}

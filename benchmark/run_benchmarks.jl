@@ -601,7 +601,7 @@ Benchmark pbrt-v4 on scenes that have .pbrt files.
 """
 function run_pbrt_benchmarks(;
     pbrt_binary::String = "/sim/Programmieren/RayTracing/pbrt-v4/build/pbrt",
-    pbrt_mode::String = "cpu",  # "cpu" or "gpu"
+    pbrt_mode::String = "gpu",  # "cpu" or "gpu"
     platform::String = detect_platform(),
     gpu_name::String = detect_gpu_name(),
     cpu_name::String = detect_cpu_name(),

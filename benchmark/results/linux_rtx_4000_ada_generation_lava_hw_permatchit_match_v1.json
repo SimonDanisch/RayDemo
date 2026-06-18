@@ -1,0 +1,79 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "rtx_4000_ada_generation",
+        "cpu_name": "7900x",
+        "device_name": "rtx_4000_ada_generation",
+        "backend_name": "lava_hw_permatchit",
+        "version": "match_v1",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 2,
+        "n_trials": 5,
+        "timestamp": "2026-06-04 19:56:49",
+        "julia_version": "1.12.6",
+        "cpu_threads": 24
+    },
+    "scenes": {
+        "crown": {
+            "resolution": [
+                1000,
+                1400
+            ],
+            "samples": 16,
+            "max_depth": 100,
+            "hw_accel": true,
+            "timings": [
+                2.307261735,
+                2.309452327,
+                2.312415658,
+                2.306283389,
+                2.317378625
+            ],
+            "median": 2.3095,
+            "min": 2.3063,
+            "max": 2.3174
+        },
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                36.094772916,
+                1.586872018,
+                1.58757204,
+                1.592152197,
+                1.586890082
+            ],
+            "median": 1.5876,
+            "min": 1.5869,
+            "max": 36.0948
+        },
+        "killeroo_gold": {
+            "resolution": [
+                1368,
+                1026
+            ],
+            "samples": 32,
+            "max_depth": 5,
+            "hw_accel": true,
+            "timings": [
+                0.791670461,
+                0.793675824,
+                0.792189925,
+                0.794893319,
+                0.791850739
+            ],
+            "median": 0.7922,
+            "min": 0.7917,
+            "max": 0.7949
+        },
+        "materials": {
+            "error": "LavaError during memory allocation:\n  Out of GPU memory. Requested 313 MiB (328320000 bytes), currently 15852 MiB live in 135 buffers.\n  Suggestion: Free unused LavaArrays, reduce problem size, or check for memory leaks with Lava.gpu_memory_usage()."
+        }
+    }
+}

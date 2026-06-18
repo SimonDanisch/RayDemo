@@ -1,0 +1,37 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "rtx_4000_ada_generation",
+        "cpu_name": "7900x",
+        "device_name": "rtx_4000_ada_generation",
+        "backend_name": "lava_hw",
+        "version": "skipfinalize_v1",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 4,
+        "timestamp": "2026-06-04 05:42:35",
+        "julia_version": "1.12.6",
+        "cpu_threads": 24
+    },
+    "scenes": {
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                2.103993246,
+                2.106074545,
+                2.101684351,
+                2.104010656
+            ],
+            "median": 2.104,
+            "min": 2.1017,
+            "max": 2.1061
+        }
+    }
+}
