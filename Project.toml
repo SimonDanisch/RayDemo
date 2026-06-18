@@ -9,6 +9,7 @@ FFMPEG_jll = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 Geant4 = "559df036-b7a0-42fd-85df-7d5dd9d70f44"
+GPUSelect = "203851ad-5791-4cf9-9fcc-5933b5611f42"
 GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
 Hikari = "afc56b53-c9a9-482a-a956-d1d800e05558"
 ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
@@ -32,12 +33,20 @@ WaterLily = "ed894a53-35f9-47f1-b17f-85db9237eebd"
 XPalm = "6b523e1e-d512-416c-8e51-a8fbef0064e7"
 
 [sources]
+GPUSelect = {url = "https://github.com/SimonDanisch/GPUSelect.jl", rev = "main"}
 Lava = {url = "https://github.com/SimonDanisch/Lava.jl", rev = "sd/nvidia"}
 Hikari = {url = "https://github.com/JuliaGraphics/Hikari.jl", rev = "sd/vk-hw-accel"}
 Raycore = {url = "https://github.com/JuliaGeometry/Raycore.jl", rev = "master"}
+MeshIO = {url = "https://github.com/JuliaIO/MeshIO.jl.git", rev = "sd/gltf-glb"}
 Makie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava", subdir = "Makie"}
 GLMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava", subdir = "GLMakie"}
 RayMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava", subdir = "RayMakie"}
 ComputePipeline = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava", subdir = "ComputePipeline"}
 ProtPlot = {url = "https://github.com/SimonDanisch/ProtPlot.jl.git", rev = "sd/merge-ribbons"}
 BiotSavartBCs = {url = "https://github.com/weymouth/BiotSavartBCs.jl", rev = "main"}
+
+[compat]
+# 0.5.11 mis-parses binary-PLY face indices (Crown crown geometry → garbage
+# vertex indices, "Failed to verify position attribute"); pin to the 0.5.10 the
+# working dev/root env uses until the regression is fixed upstream.
+GeometryBasics = "=0.5.10"
