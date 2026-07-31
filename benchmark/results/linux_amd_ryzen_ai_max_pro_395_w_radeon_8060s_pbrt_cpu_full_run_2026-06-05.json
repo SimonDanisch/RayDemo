@@ -1,0 +1,71 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "backend_name": "pbrt_cpu",
+        "version": "full_run_2026-06-05",
+        "renderer": "pbrt-v4",
+        "pbrt_mode": "cpu",
+        "pbrt_binary": "/sim/Programmieren/VulkanDev/pbrt-v4/build/pbrt",
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-06-05 18:30:47",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "crown": {
+            "resolution": "native",
+            "samples": 16,
+            "pbrt_mode": "cpu",
+            "timings": [
+                14.398437444,
+                14.404761931,
+                14.370185687
+            ],
+            "median": 14.3984,
+            "min": 14.3702,
+            "max": 14.4048
+        },
+        "bunny_cloud": {
+            "resolution": "native",
+            "samples": 8,
+            "pbrt_mode": "cpu",
+            "timings": [
+                11.733946956,
+                11.777248543,
+                11.758772526
+            ],
+            "median": 11.7588,
+            "min": 11.7339,
+            "max": 11.7772
+        },
+        "killeroo_gold": {
+            "resolution": "native",
+            "samples": 32,
+            "pbrt_mode": "cpu",
+            "timings": [
+                8.384787892,
+                8.370014711,
+                8.372498462
+            ],
+            "median": 8.3725,
+            "min": 8.37,
+            "max": 8.3848
+        },
+        "materials": {
+            "resolution": "native",
+            "samples": 10,
+            "pbrt_mode": "cpu",
+            "timings": [
+                4.101928028,
+                4.104827098,
+                4.110173102
+            ],
+            "median": 4.1048,
+            "min": 4.1019,
+            "max": 4.1102
+        }
+    }
+}
