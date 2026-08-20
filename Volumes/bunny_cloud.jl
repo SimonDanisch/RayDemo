@@ -1,6 +1,20 @@
 # Bunny Cloud Scene - NanoVDB Volumetric Path Tracing Example
 # Uses actual NanoVDB volumetric data from pbrt-v4-scenes for spatially-varying density
 # This parses the NanoVDB file format directly in Julia and renders with GridMedium + VolPath
+#
+# COMPARING AGAINST bunny-cloud.pbrt: this render is a HORIZONTAL MIRROR of
+# pbrt's. That is a convention difference, not a defect. pbrt's camera space is
+# left-handed (`transform.cpp` LookAt: right = cross(up, dir)); Makie's is
+# right-handed (right = cross(dir, up)). The same LookAt numbers therefore give
+# mirrored images, and RayMakie must keep Makie's convention because its raster
+# overlays use Makie's own projection matrix.
+#
+# Measured at 256 spp against pbrt's own EXR (2026-08-20):
+#   mean |Δlum| vs pbrt as-is     0.0458
+#   mean |Δlum| vs pbrt MIRRORED  0.0134   <- residual is Halton-vs-Sobol noise
+#   cloud mean Δ                  -0.1364 -> +0.0035
+# So mirror one image before diffing, or the cloud reads ~19% dark when it is
+# actually within 0.35%.
 include("../common/common.jl")
 using GeometryBasics
 
