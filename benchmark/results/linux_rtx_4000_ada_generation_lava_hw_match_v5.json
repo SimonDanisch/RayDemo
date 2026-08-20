@@ -1,0 +1,87 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "rtx_4000_ada_generation",
+        "cpu_name": "7900x",
+        "device_name": "rtx_4000_ada_generation",
+        "backend_name": "lava_hw",
+        "version": "match_v5",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-08-20 11:15:27",
+        "julia_version": "1.12.6",
+        "cpu_threads": 24
+    },
+    "scenes": {
+        "crown": {
+            "resolution": [
+                1000,
+                1400
+            ],
+            "samples": 16,
+            "max_depth": 100,
+            "hw_accel": true,
+            "timings": [
+                2.202116364,
+                2.146440802,
+                2.142619194
+            ],
+            "median": 2.1464,
+            "min": 2.1426,
+            "max": 2.2021
+        },
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                1.792366697,
+                1.808628978,
+                1.76797562
+            ],
+            "median": 1.7924,
+            "min": 1.768,
+            "max": 1.8086
+        },
+        "killeroo_gold": {
+            "resolution": [
+                1368,
+                1026
+            ],
+            "samples": 32,
+            "max_depth": 5,
+            "hw_accel": true,
+            "timings": [
+                0.717018335,
+                0.728002346,
+                0.748400925
+            ],
+            "median": 0.728,
+            "min": 0.717,
+            "max": 0.7484
+        },
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                0.635296202,
+                0.638363805,
+                0.641961682
+            ],
+            "median": 0.6384,
+            "min": 0.6353,
+            "max": 0.642
+        }
+    }
+}
