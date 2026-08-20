@@ -2,12 +2,13 @@
 # Uses actual NanoVDB volumetric data from pbrt-v4-scenes for spatially-varying density
 # This parses the NanoVDB file format directly in Julia and renders with GridMedium + VolPath
 #
-# COMPARING AGAINST bunny-cloud.pbrt: this render is a HORIZONTAL MIRROR of
-# pbrt's. That is a convention difference, not a defect. pbrt's camera space is
-# left-handed (`transform.cpp` LookAt: right = cross(up, dir)); Makie's is
-# right-handed (right = cross(dir, up)). The same LookAt numbers therefore give
-# mirrored images, and RayMakie must keep Makie's convention because its raster
-# overlays use Makie's own projection matrix.
+# COMPARING AGAINST bunny-cloud.pbrt: THIS scene renders as a HORIZONTAL MIRROR
+# of pbrt's, because it hands the .pbrt's raw LookAt numbers straight to
+# `update_cam!`. Note that Crown does NOT mirror — it derives its camera through
+# `RayMakie.pbrt_to_makie` (from the CTM, with an orthogonalised up). Both go
+# through Camera3D -> Raycore.look_at, so the flip is decided by the arguments;
+# exactly WHICH argument is not established (see the note in
+# Hikari/src/pbrt/scene_builder.jl). So: check both orientations, never assume.
 #
 # Measured at 256 spp against pbrt's own EXR (2026-08-20):
 #   mean |Δlum| vs pbrt as-is     0.0458
