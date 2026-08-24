@@ -521,13 +521,17 @@ function run_julia_benchmarks(;
             GC.gc(false)
         end
 
-        # Save render to results/renders/
+        # Save render to results/renders/.  A failure here means the reference
+        # image for this scene is missing, so it has to be reported — silently
+        # swallowing it leaves the run looking clean with no image to check.
         try
             renders_dir = joinpath(output_dir, "renders")
             mkpath(renders_dir)
             out_path = joinpath(renders_dir, "$(scene_name)_$(backend_name).png")
             Base.invokelatest(FileIO.save, out_path, img)
-        catch; end
+        catch e
+            @warn "  Saving render for $scene_name failed" exception=(e, catch_backtrace())
+        end
 
         # Timed trials
         println("  Benchmarking ($n_trials trials)...")
@@ -553,13 +557,21 @@ function run_julia_benchmarks(;
         # accumulated dispatch state. Close integrator + force GC + flush deferred frees.
         try
             Base.invokelatest(close, integrator)
-        catch; end
+        catch e
+            @warn "  Closing integrator for $scene_name failed" exception=(e, catch_backtrace())
+        end
         GC.gc(true)
         if isdefined(Main, :Lava)
+            # Lava dropped the zero-arg convenience forms ("explicit arguments
+            # over implicit state") and renamed `flush_deferred_frees!` to
+            # `drain_deferred_frees!`, which takes the batch queue.
             try
-                Main.Lava.vk_flush!()
-                Main.Lava.flush_deferred_frees!()
-            catch; end
+                ctx = Main.Lava.vk_context()
+                Main.Lava.vk_flush!(ctx)
+                Main.Lava.drain_deferred_frees!(ctx.default_bq)
+            catch e
+                @warn "  Lava flush after $scene_name failed" exception=(e, catch_backtrace())
+            end
         end
 
         if !isempty(timings)
