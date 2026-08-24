@@ -46,13 +46,26 @@ function create_scene(; resolution=(1200, 900))
 
     # Bump/displacement height field — mirrors Crown's engraved mitra materials,
     # which set pbrt-v4 "texture displacement" on conductor / coateddiffuse /
-    # dielectric. One procedural height texture drives all three BumpMapped
-    # variants below, so the material showcase exercises the bump shading path.
+    # dielectric. One procedural height texture drives all three materials below.
+    #
+    # Only two of the three actually show it: Hikari applies the perturbed
+    # shading frame in the MICROFACET branch only, so a perfectly specular
+    # material ignores its height field entirely. Measured on this GPU, with the
+    # height field attached vs not: textured_gold (rough conductor) and
+    # coated_blue (roughness 0.05) differ by 14% / 7% RMSE, while `glass`
+    # (Dielectric, roughness 0) is BIT-IDENTICAL — as are Mirror, ThinDielectric
+    # and a roughness-0 Conductor, even at 20x the bump amplitude. The height
+    # field on `glass` is inert; it is kept so the scene still mirrors Crown's
+    # saphire, and so this stops being a silent no-op if Hikari ever moves the
+    # perturbation ahead of the smooth/rough split.
     bump_tex = Hikari.Texture(make_perlin_texture(128; scale=12.0, bias=0.5, contrast=1.0))
 
     # --- Glass and transparent materials (front row) ---
     # Crown saphire: dielectric + "texture displacement".
-    glass = Hikari.BumpMapped(Hikari.Dielectric(Kt=(1, 1, 1), index=1.5), bump_tex)
+    # `set_displacement` rather than `bump=`: Dielectric's keyword constructor
+    # runs `TexHandle(bump)` instead of `matparam(bump)`, so it only takes a
+    # constant — a host `Texture` has to go in through the field.
+    glass = Hikari.set_displacement(Hikari.Dielectric(Kt=(1, 1, 1), index=1.5), bump_tex)
     thin_glass = Hikari.ThinDielectric(eta=1.5)
     glass_tint_tex = make_perlin_rgb_texture(64; scale=3.0, base_color=(0.95, 0.98, 1.0), variation=0.08)
     textured_glass = Hikari.Dielectric(Kt=Hikari.Texture(glass_tint_tex), index=1.5)
@@ -108,13 +121,11 @@ function create_scene(; resolution=(1200, 900))
     # --- Metals with textures ---
     gold_roughness_tex = make_perlin_texture(64; scale=6.0, bias=0.03, contrast=0.08)
     # Crown mitra_right_back: gold conductor + roughness texture + "texture displacement".
-    textured_gold = Hikari.BumpMapped(
-        Hikari.Conductor(
-            eta = (0.143f0, 0.374f0, 1.442f0),
-            k = (3.983f0, 2.385f0, 1.603f0),
-            roughness = Hikari.Texture(gold_roughness_tex)
-        ),
-        bump_tex,
+    textured_gold = Hikari.Conductor(
+        eta = (0.143f0, 0.374f0, 1.442f0),
+        k = (3.983f0, 2.385f0, 1.603f0),
+        roughness = Hikari.Texture(gold_roughness_tex),
+        bump = bump_tex,
     )
 
     silver = Hikari.Silver(roughness=0.02)
@@ -129,7 +140,7 @@ function create_scene(; resolution=(1200, 900))
         conductor_roughness=0.01
     )
     # Crown mitra_inlay: coateddiffuse + "texture displacement".
-    coated_blue = Hikari.BumpMapped(Hikari.CoatedDiffuse(reflectance=(0.1, 0.2, 0.7), roughness=0.05), bump_tex)
+    coated_blue = Hikari.CoatedDiffuse(reflectance=(0.1, 0.2, 0.7), roughness=0.05, bump=bump_tex)
     plastic_white = Hikari.Plastic(color=(0.9, 0.9, 0.9), roughness=0.15)
 
     # --- Emissive materials ---
