@@ -15,9 +15,11 @@ Hikari = "afc56b53-c9a9-482a-a956-d1d800e05558"
 ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+KernelInterfaces = "ce25d451-9bb5-4870-a156-ce22182641de"
 Lava = "3a680b1f-cb25-4bee-9cf7-bc880b76dc8c"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+Mantle = "8f4c1f2e-6a3d-4b71-9c05-2e7d8a1b6f34"
 MapTiles = "fea52e5a-b371-463b-85f5-81770daa2737"
 MeshIO = "7269a6da-0436-5bbc-96c2-40638cbb6118"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
@@ -38,9 +40,15 @@ BiotSavartBCs = {rev = "main", url = "https://github.com/weymouth/BiotSavartBCs.
 ComputePipeline = {rev = "sd/lava", subdir = "ComputePipeline", url = "https://github.com/MakieOrg/Makie.jl.git"}
 GLMakie = {rev = "sd/lava", subdir = "GLMakie", url = "https://github.com/MakieOrg/Makie.jl.git"}
 GPUSelect = {rev = "main", url = "https://github.com/SimonDanisch/GPUSelect.jl"}
-Hikari = {rev = "sd/vk-hw-accel", url = "https://github.com/JuliaGraphics/Hikari.jl"}
-Lava = {rev = "sd/nvidia", url = "https://github.com/SimonDanisch/Lava.jl"}
+Hikari = {rev = "sd/compile-optimizations", url = "https://github.com/JuliaGraphics/Hikari.jl"}
+# Lives in Mantle's repo under lib/, but is its own package (Lava depends on it
+# without depending on Mantle).
+KernelInterfaces = {rev = "sd/mantle-dev", subdir = "lib/KernelInterfaces", url = "https://github.com/SimonDanisch/Mantle.jl"}
+Lava = {rev = "sd/compiler-optimizations", url = "https://github.com/SimonDanisch/Lava.jl"}
 Makie = {rev = "sd/lava", subdir = "Makie", url = "https://github.com/MakieOrg/Makie.jl.git"}
+Mantle = {rev = "sd/mantle-dev", url = "https://github.com/SimonDanisch/Mantle.jl"}
 MeshIO = {rev = "sd/gltf-glb", url = "https://github.com/JuliaIO/MeshIO.jl.git"}
 RayMakie = {rev = "sd/lava", subdir = "RayMakie", url = "https://github.com/MakieOrg/Makie.jl.git"}
-Raycore = {rev = "master", url = "https://github.com/JuliaGeometry/Raycore.jl"}
+Raycore = {rev = "sd/with-texture", url = "https://github.com/JuliaGeometry/Raycore.jl"}
+Vulkan = {rev = "sd/vk1.4", url = "https://github.com/JuliaGPU/Vulkan.jl.git"}
+VulkanCore = {rev = "sd/vk1.4", url = "https://github.com/JuliaGPU/VulkanCore.jl.git"}
