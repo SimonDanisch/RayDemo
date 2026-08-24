@@ -8,45 +8,39 @@ Extents = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
 FFMPEG_jll = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
-Geant4 = "559df036-b7a0-42fd-85df-7d5dd9d70f44"
 GPUSelect = "203851ad-5791-4cf9-9fcc-5933b5611f42"
+Geant4 = "559df036-b7a0-42fd-85df-7d5dd9d70f44"
 GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
 Hikari = "afc56b53-c9a9-482a-a956-d1d800e05558"
 ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
-JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 Lava = "3a680b1f-cb25-4bee-9cf7-bc880b76dc8c"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 MapTiles = "fea52e5a-b371-463b-85f5-81770daa2737"
 MeshIO = "7269a6da-0436-5bbc-96c2-40638cbb6118"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 PlantGeom = "5edaa67e-25db-4eb9-bf81-05d793b2238d"
-ProtPlot = "77b3afcc-388a-4e14-926d-b99c82d1a01f"
 ProteinChains = "b8e8f2a5-48d3-44f1-ba0d-c71cb7726ff8"
+RayMakie = "70852e3a-d594-4041-8350-783a02753e02"
 Raycore = "afc56b53-c9a9-482a-a956-d1d800e05559"
 Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
-RayMakie = "70852e3a-d594-4041-8350-783a02753e02"
 Tyler = "e170d443-b9d6-418a-9ee8-061e966341ef"
+Vulkan = "9f14b124-c50e-4008-a7d4-969b3a6cd68a"
+VulkanCore = "16167f82-ea26-5cba-b1de-ed6fd5e30a11"
 WaterLily = "ed894a53-35f9-47f1-b17f-85db9237eebd"
 XPalm = "6b523e1e-d512-416c-8e51-a8fbef0064e7"
 
 [sources]
-GPUSelect = {url = "https://github.com/SimonDanisch/GPUSelect.jl", rev = "main"}
-Lava = {url = "https://github.com/SimonDanisch/Lava.jl", rev = "sd/nvidia"}
-Hikari = {url = "https://github.com/JuliaGraphics/Hikari.jl", rev = "sd/vk-hw-accel"}
-Raycore = {url = "https://github.com/JuliaGeometry/Raycore.jl", rev = "master"}
-MeshIO = {url = "https://github.com/JuliaIO/MeshIO.jl.git", rev = "sd/gltf-glb"}
-Makie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava", subdir = "Makie"}
-GLMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava", subdir = "GLMakie"}
-RayMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava", subdir = "RayMakie"}
-ComputePipeline = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava", subdir = "ComputePipeline"}
-ProtPlot = {url = "https://github.com/SimonDanisch/ProtPlot.jl.git", rev = "sd/merge-ribbons"}
-BiotSavartBCs = {url = "https://github.com/weymouth/BiotSavartBCs.jl", rev = "main"}
-
-[compat]
-# 0.5.11 mis-parses binary-PLY face indices (Crown crown geometry → garbage
-# vertex indices, "Failed to verify position attribute"); pin to the 0.5.10 the
-# working dev/root env uses until the regression is fixed upstream.
-GeometryBasics = "=0.5.10"
+BiotSavartBCs = {rev = "main", url = "https://github.com/weymouth/BiotSavartBCs.jl"}
+ComputePipeline = {rev = "sd/lava", subdir = "ComputePipeline", url = "https://github.com/MakieOrg/Makie.jl.git"}
+GLMakie = {rev = "sd/lava", subdir = "GLMakie", url = "https://github.com/MakieOrg/Makie.jl.git"}
+GPUSelect = {rev = "main", url = "https://github.com/SimonDanisch/GPUSelect.jl"}
+Hikari = {rev = "sd/vk-hw-accel", url = "https://github.com/JuliaGraphics/Hikari.jl"}
+Lava = {rev = "sd/nvidia", url = "https://github.com/SimonDanisch/Lava.jl"}
+Makie = {rev = "sd/lava", subdir = "Makie", url = "https://github.com/MakieOrg/Makie.jl.git"}
+MeshIO = {rev = "sd/gltf-glb", url = "https://github.com/JuliaIO/MeshIO.jl.git"}
+RayMakie = {rev = "sd/lava", subdir = "RayMakie", url = "https://github.com/MakieOrg/Makie.jl.git"}
+Raycore = {rev = "master", url = "https://github.com/JuliaGeometry/Raycore.jl"}

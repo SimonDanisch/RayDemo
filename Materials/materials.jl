@@ -213,9 +213,9 @@ end
 if abspath(PROGRAM_FILE) == @__FILE__
     using Lava
     DEVICE = Lava.LavaBackend()
-    scene = create_scene()
     sensor = Hikari.PixelSensor(; iso=50, exposure_time=1.0, whitebalance=0)
-    RayMakie.vulkan_viewer(scene; integrator=Hikari.VolPath(; hw_accel=true, sensor=sensor))
+    scene = create_scene()
+    display(scene; sensor=sensor, integrator=Hikari.VolPath(; samples=1, max_depth=50, hw_accel=true))
     cam = cameracontrols(scene)
     cam.eyeposition[] = Vec3f(0, -7.5, 2.5)
     cam.lookat[] = Vec3f(0, -4.7, 0)
