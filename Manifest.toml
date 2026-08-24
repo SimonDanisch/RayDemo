@@ -2,7 +2,7 @@
 
 julia_version = "1.12.7"
 manifest_format = "2.0"
-project_hash = "c7e2b7a5b617ea42a56e2a2e0d9841cfdf144da3"
+project_hash = "18a2244f0bbd82a63533f000b3c2381fbce1bb20"
 
 [[deps.AMDGPU]]
 deps = ["AMDGPU_LLVM_Backend_jll", "AbstractFFTs", "AcceleratedKernels", "Adapt", "Atomix", "BFloat16s", "CEnum", "ExprTools", "GPUArrays", "GPUCompiler", "GPUToolbox", "KernelAbstractions", "LLVM", "Libdl", "LinearAlgebra", "Pkg", "PrecompileTools", "Preferences", "PrettyTables", "Printf", "ROCmDeviceLibs_jll", "Random", "Random123", "RandomNumbers", "SparseArrays", "StaticArraysCore", "Statistics", "UnsafeAtomics"]
@@ -1235,7 +1235,7 @@ version = "0.5.3"
 
 [[deps.Hikari]]
 deps = ["Adapt", "Atomix", "FileIO", "GPUArraysCore", "GeometryBasics", "ImageCore", "ImageIO", "KernelAbstractions", "Lava", "LinearAlgebra", "Mantle", "ProgressMeter", "Random", "RandomNumbers", "Raycore", "StaticArrays", "StructArrays", "Zlib_jll"]
-git-tree-sha1 = "7f109cb5da854212ff42a962c797859b61c73e29"
+git-tree-sha1 = "b23e15ff052dc9b2ccaf9acfc375b2b50bcde0a4"
 repo-rev = "sd/compile-optimizations"
 repo-url = "https://github.com/JuliaGraphics/Hikari.jl"
 uuid = "afc56b53-c9a9-482a-a956-d1d800e05558"
@@ -2391,7 +2391,7 @@ weakdeps = ["FixedPointNumbers"]
 
 [[deps.RayMakie]]
 deps = ["AcceleratedKernels", "Adapt", "Colors", "GLFW", "GeometryBasics", "Hikari", "ImageCore", "KernelAbstractions", "Lava", "LinearAlgebra", "Makie", "Raycore", "StaticArrays"]
-git-tree-sha1 = "960cb27a4a735ebf823061f35ed3990a1e249446"
+git-tree-sha1 = "56b05f2b996113e6d4fb38f06ec085dd9a3d3523"
 repo-rev = "sd/lava"
 repo-subdir = "RayMakie"
 repo-url = "https://github.com/MakieOrg/Makie.jl.git"
@@ -2700,9 +2700,9 @@ version = "1.8.0"
 
 [[deps.StatsBase]]
 deps = ["AliasTables", "DataAPI", "DataStructures", "IrrationalConstants", "LinearAlgebra", "LogExpFunctions", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics", "StatsAPI"]
-git-tree-sha1 = "e4d7a1a0edc20af42689ea6f4f3587a2175d50ee"
+git-tree-sha1 = "adb9da019510162e67a4493fc235c23203d8b09e"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
-version = "0.34.12"
+version = "0.34.13"
 
 [[deps.StatsFuns]]
 deps = ["HypergeometricFunctions", "IrrationalConstants", "LogExpFunctions", "Reexport", "Rmath", "SpecialFunctions"]
@@ -2808,9 +2808,9 @@ version = "0.1.1"
 
 [[deps.Term]]
 deps = ["AbstractTrees", "CodeTracking", "Dates", "Highlights", "InteractiveUtils", "Logging", "Markdown", "MyterialColors", "OrderedCollections", "Parameters", "PrecompileTools", "ProgressLogging", "REPL", "Tables", "UUIDs", "Unicode", "UnicodeFun"]
-git-tree-sha1 = "dfb5cd0af7f67f7487287fa7f83860fe0cb45899"
+git-tree-sha1 = "6b34cdfa6b08d2a8c5a50338b10483c0602633d5"
 uuid = "22787eb5-b846-44ae-b979-8e399b8463ab"
-version = "2.0.8"
+version = "2.1.0"
 
 [[deps.Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
