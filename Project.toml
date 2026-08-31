@@ -18,6 +18,7 @@ JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 Lava = "3a680b1f-cb25-4bee-9cf7-bc880b76dc8c"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+Mantle = "8f4c1f2e-6a3d-4b71-9c05-2e7d8a1b6f34"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 MapTiles = "fea52e5a-b371-463b-85f5-81770daa2737"
 MeshIO = "7269a6da-0436-5bbc-96c2-40638cbb6118"
@@ -34,14 +35,15 @@ XPalm = "6b523e1e-d512-416c-8e51-a8fbef0064e7"
 
 [sources]
 GPUSelect = {url = "https://github.com/SimonDanisch/GPUSelect.jl", rev = "main"}
-Lava = {url = "https://github.com/SimonDanisch/Lava.jl", rev = "sd/nvidia"}
-Hikari = {url = "https://github.com/JuliaGraphics/Hikari.jl", rev = "sd/vk-hw-accel"}
-Raycore = {url = "https://github.com/JuliaGeometry/Raycore.jl", rev = "master"}
+Lava = {url = "https://github.com/SimonDanisch/Lava.jl", rev = "sd/lava-refactor"}
+Mantle = {url = "https://github.com/SimonDanisch/Mantle.jl", rev = "sd/lava-refactor"}
+Hikari = {url = "https://github.com/JuliaGraphics/Hikari.jl", rev = "sd/lava-refactor"}
+Raycore = {url = "https://github.com/JuliaGeometry/Raycore.jl", rev = "sd/with-texture"}
 MeshIO = {url = "https://github.com/JuliaIO/MeshIO.jl.git", rev = "sd/gltf-glb"}
-Makie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava", subdir = "Makie"}
-GLMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava", subdir = "GLMakie"}
-RayMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava", subdir = "RayMakie"}
-ComputePipeline = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava", subdir = "ComputePipeline"}
+Makie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava-refactor", subdir = "Makie"}
+GLMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava-refactor", subdir = "GLMakie"}
+RayMakie = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava-refactor", subdir = "RayMakie"}
+ComputePipeline = {url = "https://github.com/MakieOrg/Makie.jl.git", rev = "sd/lava-refactor", subdir = "ComputePipeline"}
 ProtPlot = {url = "https://github.com/SimonDanisch/ProtPlot.jl.git", rev = "sd/merge-ribbons"}
 BiotSavartBCs = {url = "https://github.com/weymouth/BiotSavartBCs.jl", rev = "main"}
 
