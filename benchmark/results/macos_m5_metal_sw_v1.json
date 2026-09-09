@@ -1,0 +1,104 @@
+{
+    "metadata": {
+        "platform": "macos",
+        "gpu_name": "m5",
+        "cpu_name": "m5",
+        "device_name": "m5",
+        "backend_name": "metal_sw",
+        "version": "v1",
+        "renderer": "raymakie",
+        "hw_accel": false,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-09-08 19:37:30",
+        "julia_version": "1.12.7",
+        "cpu_threads": 4
+    },
+    "scenes": {
+        "crown": {
+            "resolution": [
+                1000,
+                1400
+            ],
+            "samples": 16,
+            "max_depth": 100,
+            "hw_accel": false,
+            "timings": [
+                17.266910458,
+                17.9399385,
+                20.044316209
+            ],
+            "median": 17.9399,
+            "min": 17.2669,
+            "max": 20.0443
+        },
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                24.653096583,
+                24.405852417,
+                24.321005084
+            ],
+            "median": 24.4059,
+            "min": 24.321,
+            "max": 24.6531
+        },
+        "killeroo_gold": {
+            "resolution": [
+                1368,
+                1026
+            ],
+            "samples": 32,
+            "max_depth": 5,
+            "hw_accel": false,
+            "timings": [
+                7.280277666,
+                7.172952833,
+                7.326355125
+            ],
+            "median": 7.2803,
+            "min": 7.173,
+            "max": 7.3264
+        },
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                3.493029459,
+                3.466089542,
+                3.754063458
+            ],
+            "median": 3.493,
+            "min": 3.4661,
+            "max": 3.7541
+        },
+        "black_hole": {
+            "resolution": [
+                800,
+                450
+            ],
+            "samples": 32,
+            "max_depth": 100,
+            "hw_accel": false,
+            "timings": [
+                4.393238041,
+                4.35473375,
+                4.280591959
+            ],
+            "median": 4.3547,
+            "min": 4.2806,
+            "max": 4.3932
+        }
+    }
+}

@@ -219,7 +219,8 @@ function run_ak_benchmarks(;
         # Filter detected AK backends by name. Accepts both AK-native names
         # ("lava", "cpu") and render-side names ("lava_hw", "lava_sw") — the
         # latter normalize to "lava" since AK doesn't differentiate HW/SW.
-        requested = Set(String[replace(b, r"^lava_(hw|sw)$" => "lava") for b in backends])
+        requested = Set(String[replace(replace(b, r"^lava_(hw|sw)$" => "lava"),
+                                       r"^metal_(hw|sw)$" => "metal") for b in backends])
         # Skip backends that don't have an AK equivalent (pbrt).
         requested = Set(b for b in requested if !startswith(b, "pbrt_"))
         backends = filter(t -> t[1] in requested, _detect_ak_backends())
@@ -295,6 +296,14 @@ function _detect_ak_backends()
             push!(backends, ("lava", Lava.LavaArray, () -> Lava.vk_flush!(Lava.vk_context())))
             @info "AK backend: Lava"
         catch; end
+    end
+
+    if isdefined(Main, :Metal)
+        Metal = getfield(Main, :Metal)
+        if Metal.functional()
+            push!(backends, ("metal", Metal.MtlArray, () -> Metal.synchronize()))
+            @info "AK backend: Metal"
+        end
     end
 
     if isdefined(Main, :AMDGPU)

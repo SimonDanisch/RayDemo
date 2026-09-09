@@ -261,6 +261,12 @@ function detect_gpu_name()
         return shorten_device_name(Main.Lava.vk_context().device_name, GPU_SHORT_NAMES)
     catch; end
 
+    # Metal names the device directly, and there is no Vulkan loader on a Mac to
+    # fall through to.
+    if isdefined(Main, :Metal) && Main.Metal.functional()
+        return shorten_device_name(String(Main.Metal.device().name), GPU_SHORT_NAMES)
+    end
+
     # Try NVIDIA
     try
         full = strip(read(`nvidia-smi --query-gpu=name --format=csv,noheader`, String))
@@ -349,6 +355,21 @@ function detect_backends()
             @info "Detected: Lava (Vulkan)"
         catch e
             @info "Lava loaded but failed: $(sprint(showerror, e)[1:min(end,80)])"
+        end
+    end
+
+    # Metal (Apple GPUs). Same shape as Lava above and for the same reason: the
+    # hardware path's kernels are shared with the software path, so running it
+    # first keeps the second from paying a cold compile.
+    if isdefined(Main, :Metal)
+        Metal = getfield(Main, :Metal)
+        if Metal.functional()
+            backend = Metal.MetalBackend()
+            push!(backends, "metal_hw" => (; backend, hw_accel=true))
+            push!(backends, "metal_sw" => (; backend, hw_accel=false))
+            @info "Detected: Metal"
+        else
+            @info "Metal loaded but no usable device"
         end
     end
 
