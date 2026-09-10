@@ -9,7 +9,7 @@
 #   run_all_benchmarks(scenes=["materials"]) # specific scenes
 #
 # Or manually:
-#   run_julia_benchmarks(backend=Lava.LavaBackend(), backend_name="lava_sw")
+#   run_julia_benchmarks(backend=Mantle.defaultbackend(), backend_name="lava_sw")
 #   run_pbrt_benchmarks(pbrt_mode="cpu")    # or "gpu" for OptiX
 
 using JSON3, Dates, OrderedCollections
@@ -251,15 +251,29 @@ function shorten_device_name(full_name::AbstractString, patterns)
 end
 
 """
+    vulkan_context() -> VkContext or nothing
+
+The Vulkan device Mantle renders on, when its Vulkan extension is loaded. The
+runtime is `MantleVulkanExt` since the 2026-08-27 split — `Lava.vk_context`
+does not exist — and the extension is not exported, so it is fetched by name.
+"""
+function vulkan_context()
+    isdefined(Main, :Mantle) || return nothing
+    mve = Base.get_extension(getfield(Main, :Mantle), :MantleVulkanExt)
+    mve === nothing && return nothing
+    return mve.vk_context()
+end
+
+"""
     detect_gpu_name() -> String
 
 Detect the GPU and return a short name for filenames.
 """
 function detect_gpu_name()
-    # Try Lava context first (most reliable when loaded)
-    try
-        return shorten_device_name(Main.Lava.vk_context().device_name, GPU_SHORT_NAMES)
-    catch; end
+    # The device the renders actually run on, when Vulkan is loaded. On a
+    # machine with two GPUs the driver tools below name whichever they like.
+    ctx = vulkan_context()
+    ctx === nothing || return shorten_device_name(ctx.device_name, GPU_SHORT_NAMES)
 
     # Metal names the device directly, and there is no Vulkan loader on a Mac to
     # fall through to.
@@ -335,27 +349,22 @@ Checks what GPU packages are loaded in Main. Load them before calling:
 function detect_backends()
     backends = Pair{String, Any}[]
 
-    # Lava (Vulkan) - check if loaded
-    if isdefined(Main, :Lava)
-        try
-            Lava = getfield(Main, :Lava)
-            backend = Lava.LavaBackend()
-            # HW RT first: its compiled kernels are shared with SW RT, avoiding
-            # cold-start compilation of large workqueue kernels that can hang
-            # AMD's Windows shader compiler.
-            has_rt = false
-            try
-                ctx = Lava.vk_context()
-                if ctx.rt_pipeline_properties !== nothing
-                    push!(backends, "lava_hw" => (; backend, hw_accel=true))
-                    has_rt = true
-                end
-            catch; end
-            push!(backends, "lava_sw" => (; backend, hw_accel=false))
-            @info "Detected: Lava (Vulkan)"
-        catch e
-            @info "Lava loaded but failed: $(sprint(showerror, e)[1:min(end,80)])"
+    # Vulkan, through Mantle: `Mantle.defaultbackend()` is the backend whose
+    # extension loaded (`using Lava` on a machine with a driver), the same call
+    # `common.jl` makes for the scenes. `Lava.LavaBackend` and `Lava.vk_context`
+    # do not exist since the split; the device's ray-tracing support is read
+    # off the context the extension holds.
+    ctx = vulkan_context()
+    if ctx !== nothing
+        backend = getfield(Main, :Mantle).defaultbackend()
+        # HW RT first: its compiled kernels are shared with SW RT, avoiding
+        # cold-start compilation of large workqueue kernels that can hang
+        # AMD's Windows shader compiler.
+        if ctx.rt_pipeline_properties !== nothing
+            push!(backends, "lava_hw" => (; backend, hw_accel=true))
         end
+        push!(backends, "lava_sw" => (; backend, hw_accel=false))
+        @info "Detected: Vulkan via Mantle" device=ctx.device_name
     end
 
     # Metal (Apple GPUs). Same shape as Lava above and for the same reason: the
@@ -510,13 +519,17 @@ function run_julia_benchmarks(;
             continue
         end
 
-        isdefined(m, :create_scene) || (@warn "$scene_name: no create_scene()"; continue)
+        Base.invokelatest(isdefined, m, :create_scene) || (@warn "$scene_name: no create_scene()"; continue)
+        # The script was just included, so its bindings are newer than this
+        # function's world: reach them through `invokelatest`, the binding
+        # access included (Julia 1.12 warns on the bare `m.create_scene`).
+        create_scene = Base.invokelatest(getglobal, m, :create_scene)
 
         # Create scene once
         print("  Creating scene... ")
         local scene
         try
-            scene = Base.invokelatest(m.create_scene; resolution=cfg.resolution)
+            scene = Base.invokelatest(create_scene; resolution=cfg.resolution)
         catch e
             @warn "create_scene failed" exception=(e, catch_backtrace())
             results["scenes"][scene_name] = OrderedDict("error" => sprint(showerror, e))
@@ -574,26 +587,14 @@ function run_julia_benchmarks(;
             end
         end
 
-        # Clean up GPU resources between scenes to prevent DEVICE_LOST from
-        # accumulated dispatch state. Close integrator + force GC + flush deferred frees.
-        try
-            Base.invokelatest(close, integrator)
-        catch e
-            @warn "  Closing integrator for $scene_name failed" exception=(e, catch_backtrace())
-        end
+        # Clean up GPU resources between scenes: close the integrator (frees its
+        # render state), collect, and wait for everything still in flight so the
+        # next scene starts on an idle device. This used to call
+        # `Lava.vk_flush!()` and `Lava.flush_deferred_frees!()` inside a bare
+        # try/catch; neither exists since the split, so it silently did nothing.
+        Base.invokelatest(close, integrator)
         GC.gc(true)
-        if isdefined(Main, :Lava)
-            # Lava dropped the zero-arg convenience forms ("explicit arguments
-            # over implicit state") and renamed `flush_deferred_frees!` to
-            # `drain_deferred_frees!`, which takes the batch queue.
-            try
-                ctx = Main.Lava.vk_context()
-                Main.Lava.vk_flush!(ctx)
-                Main.Lava.drain_deferred_frees!(ctx.default_bq)
-            catch e
-                @warn "  Lava flush after $scene_name failed" exception=(e, catch_backtrace())
-            end
-        end
+        Base.invokelatest(getfield(Main, :Mantle).waitidle, backend)
 
         if !isempty(timings)
             scene_result = OrderedDict(
