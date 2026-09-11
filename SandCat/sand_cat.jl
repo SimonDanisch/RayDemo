@@ -15,7 +15,7 @@
 # Run via:
 #   julia> include("/sim/Programmieren/VulkanDev/RayDemo/SandCat/sand_cat.jl")
 
-using Lava
+using Mantle
 using Raycore
 using GeometryBasics
 using GeometryBasics: Point3f, Vec3f, GLTriangleFace
@@ -51,16 +51,16 @@ mutable struct SandCatScene
 
     # Pre-computed per-triangle geometric normals (CPU + GPU)
     tri_normals::Vector{Vec3f}
-    tri_normals_gpu::Lava.LavaArray{Vec3f, 1}
+    tri_normals_gpu::Mantle.LavaArray{Vec3f, 1}
 
     # GPU acceleration structures
-    tlas::Lava.HWTLAS
-    grain_blas::Union{Nothing, Lava.LavaBLAS}
+    tlas::Mantle.HWTLAS
+    grain_blas::Union{Nothing, Mantle.LavaBLAS}
     grain_handle::Union{Nothing, Raycore.TLASHandle}
     cat_handle::Union{Nothing, Raycore.TLASHandle}
 
     # Configuration
-    backend::Lava.LavaBackend
+    backend::Mantle.LavaBackend
 end
 
 """
@@ -106,14 +106,13 @@ function build_scene(; n_grains::Int = 1_000_000,
 
         # Cat is NOT in the TLAS for cat-shape spawn; tri_normals is a dummy.
         tri_normals = [Vec3f(0f0, 1f0, 0f0)]
-        tri_normals_gpu = LavaArray(tri_normals)
-
-        backend = Lava.LavaBackend()
+        backend = Mantle.defaultbackend()
+        tri_normals_gpu = Mantle.devicearray(backend, tri_normals)
         aabbs = grain_aabbs(positions, radius)
-        grain_blas = Lava.as_build() do ctx
-            Lava.build_blas_aabb(ctx, aabbs)
+        grain_blas = Mantle.build_accel!(backend) do ctx
+            Mantle.build_blas_aabb(ctx, aabbs)
         end
-        tlas = Lava.HWTLAS(backend)
+        tlas = Mantle.HWTLAS(backend)
         grain_handle = push!(tlas, grain_blas, Mat4f(I);
                              instance_id = UInt32(1), instance_mask = UInt8(0x02))
         Raycore.sync!(tlas)
@@ -126,7 +125,8 @@ function build_scene(; n_grains::Int = 1_000_000,
         )
     elseif spawn === :cube
         tri_normals = triangle_normals(cat_mesh)
-        tri_normals_gpu = LavaArray(tri_normals)
+        backend = Mantle.defaultbackend()
+        tri_normals_gpu = Mantle.devicearray(backend, tri_normals)
 
         # Cube above the cat at near close-packing density; cell = 2.2*radius.
         cell = 2.2f0 * radius
@@ -146,12 +146,12 @@ function build_scene(; n_grains::Int = 1_000_000,
         positions = spawn_grain_grid(; n_grains, region_min, region_max, jitter=j, rng)
         velocities = fill(Vec3f(0f0, 0f0, 0f0), n_grains)
 
-        backend = Lava.LavaBackend()
+        backend = Mantle.defaultbackend()
         aabbs = grain_aabbs(positions, radius)
-        grain_blas = Lava.as_build() do ctx
-            Lava.build_blas_aabb(ctx, aabbs)
+        grain_blas = Mantle.build_accel!(backend) do ctx
+            Mantle.build_blas_aabb(ctx, aabbs)
         end
-        tlas = Lava.HWTLAS(backend)
+        tlas = Mantle.HWTLAS(backend)
         cat_handle = push!(tlas, cat_mesh, Mat4f(I);
                            instance_id = UInt32(0), instance_mask = UInt8(0x01))
         grain_handle = push!(tlas, grain_blas, Mat4f(I);
@@ -178,8 +178,8 @@ ready for the next compute dispatch.
 """
 function rebuild_grain_blas!(scene::SandCatScene)
     aabbs = grain_aabbs(scene.positions, scene.radius)
-    new_blas = Lava.as_build() do ctx
-        Lava.build_blas_aabb(ctx, aabbs)
+    new_blas = Mantle.build_accel!(scene.backend) do ctx
+        Mantle.build_blas_aabb(ctx, aabbs)
     end
 
     # Drop the old grain instance, push the new BLAS, sync.
@@ -193,10 +193,10 @@ function rebuild_grain_blas!(scene::SandCatScene)
 end
 
 mutable struct PingState
-    pos_in::Lava.LavaArray{Point3f, 1}
-    pos_out::Lava.LavaArray{Point3f, 1}
-    vel_in::Lava.LavaArray{Vec3f, 1}
-    vel_out::Lava.LavaArray{Vec3f, 1}
+    pos_in::Mantle.LavaArray{Point3f, 1}
+    pos_out::Mantle.LavaArray{Point3f, 1}
+    vel_in::Mantle.LavaArray{Vec3f, 1}
+    vel_out::Mantle.LavaArray{Vec3f, 1}
 end
 
 """
@@ -205,10 +205,11 @@ end
 Allocate the GPU buffers for the ping-pong PBD step.
 """
 function make_ping_state(scene::SandCatScene)
-    pos_in  = LavaArray(scene.positions)
-    vel_in  = LavaArray(scene.velocities)
-    pos_out = LavaArray(copy(scene.positions))
-    vel_out = LavaArray(copy(scene.velocities))
+    be = scene.backend
+    pos_in  = Mantle.devicearray(be, scene.positions)
+    vel_in  = Mantle.devicearray(be, scene.velocities)
+    pos_out = Mantle.devicearray(be, copy(scene.positions))
+    vel_out = Mantle.devicearray(be, copy(scene.velocities))
     return PingState(pos_in, pos_out, vel_in, vel_out)
 end
 
@@ -240,7 +241,7 @@ function step!(scene::SandCatScene, dt::Float32, ping_state::PingState; substeps
     sub_dt = dt / Float32(substeps)
 
     @inbounds for _ in 1:substeps
-        Lava.lava_launch!(bq, pbd_step_kernel,
+        Mantle.lava_launch!(bq, pbd_step_kernel,
             ping_state.pos_in, ping_state.vel_in,
             ping_state.pos_out, ping_state.vel_out,
             scene.tri_normals_gpu,
@@ -248,7 +249,7 @@ function step!(scene::SandCatScene, dt::Float32, ping_state::PingState; substeps
             scene.radius, sub_dt, n;
             ndrange = Int(n), workgroup_size = (64, 1, 1),
             tlas = scene.tlas)
-        Lava.vk_flush!(bq)
+        Mantle.flush!(bq)
 
         # Swap roles for next substep
         ping_state.pos_in, ping_state.pos_out = ping_state.pos_out, ping_state.pos_in

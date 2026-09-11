@@ -98,8 +98,8 @@ function run_smoke(; hw_accel::Bool, spp=2, res=(160, 90), n_frames=5,
                      outpath::Union{Nothing, String}=nothing)
     println("\n=== smoke run: hw_accel=$hw_accel spp=$spp res=$res frames=$n_frames ===")
     GC.gc(true); sleep(0.2)
-    base_bufs = length(Lava.LIVE_BUFFERS)
-    base_bytes = Lava.GPU_LIVE_BYTES[]
+    base_bufs = Mantle.live_buffer_count()
+    base_bytes = Mantle.gpu_live_bytes()
     println("baseline: bufs=$base_bufs  GPU=$(round(base_bytes/1e9, digits=2))GB")
 
     jld_frames = sort(filter(startswith("frame_"), readdir(steps_dir)))
@@ -156,8 +156,8 @@ function run_smoke(; hw_accel::Bool, spp=2, res=(160, 90), n_frames=5,
             t0 = time()
             img = colorbuffer(fig; backend=RayMakie, integrator=integrator, update=false)
             push!(timings, time() - t0)
-            push!(bufs_per_frame, length(Lava.LIVE_BUFFERS))
-            gpu_mib = Lava.GPU_LIVE_BYTES[] >> 20
+            push!(bufs_per_frame, Mantle.live_buffer_count())
+            gpu_mib = Mantle.gpu_live_bytes() >> 20
             println("  frame $i: $(round(timings[end], digits=2))s  $(size(img))  bufs=$(bufs_per_frame[end])  GPU=$(gpu_mib)MiB")
         end
     else
@@ -169,16 +169,16 @@ function run_smoke(; hw_accel::Bool, spp=2, res=(160, 90), n_frames=5,
             new_vc = compute_vorticity(step, 10f0; transition=2f0)
             Makie.update!(plots.dolphin; arg1=step.body_mesh)
             update_rainbow_glow!(plots, new_vc; emission_scale=0.5f0, extinction_intensity=0.02f0)
-            push!(bufs_per_frame, length(Lava.LIVE_BUFFERS))
-            gpu_mib = Lava.GPU_LIVE_BYTES[] >> 20
-            println("  frame $i: bufs=$(length(Lava.LIVE_BUFFERS))  GPU=$(gpu_mib)MiB")
+            push!(bufs_per_frame, Mantle.live_buffer_count())
+            gpu_mib = Mantle.gpu_live_bytes() >> 20
+            println("  frame $i: bufs=$(Mantle.live_buffer_count())  GPU=$(gpu_mib)MiB")
         end
         println("\nencoded video: $outpath")
     end
 
     GC.gc(true); sleep(0.3); GC.gc(true)
-    final_bufs = length(Lava.LIVE_BUFFERS)
-    final_bytes = Lava.GPU_LIVE_BYTES[]
+    final_bufs = Mantle.live_buffer_count()
+    final_bytes = Mantle.gpu_live_bytes()
     println("after GC: bufs=$final_bufs (Δ=$(final_bufs-base_bufs))  GPU=$(round(final_bytes/1e9, digits=2))GB (Δ=$(round((final_bytes-base_bytes)/1e9, digits=2))GB)")
     return (; timings, bufs_per_frame, final_bufs, final_bytes)
 end

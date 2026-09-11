@@ -1,5 +1,5 @@
 using WaterLily, StaticArrays, BiotSavartBCs, WaterLilyMeshBodies, Random
-using Lava, KernelAbstractions
+using Mantle, KernelAbstractions
 using GLMakie, RayMakie, Hikari, Raycore
 using GeometryBasics, FileIO, Colors, ImageCore
 using LinearAlgebra: norm, cross, normalize
@@ -565,7 +565,7 @@ function construct_scene(; panel_size=(960, 540), data=load_step(1))
             up=Vec3f(0.14, 0.08, 0.99), fov=10.0)
 
     RayMakie.activate!()
-    Lava.clear_spirv_disk_cache!()
+    Mantle.clear_spirv_disk_cache!()
 
     domain_size = size(data.u)[1:3]
     pw, ph = panel_size
@@ -757,8 +757,8 @@ function hq_video(; n_frames=200, spp=1000, panel_size=(960, 540),
         step = load_step(i)
         update_scene!(plots, sd, step)
         # Telemetry: GPU-live bytes + queue lengths + slab counts (leak indicators).
-        gpu_mib = Lava.GPU_LIVE_BYTES[] >> 20
-        bq = Lava.vk_context().default_bq
+        gpu_mib = Mantle.gpu_live_bytes() >> 20
+        bq = Mantle.batchqueue(Mantle.Device())
         n_def = length(bq.deferred_frees)
         n_asdef = length(bq.deferred_as_frees)
         n_arg_slabs = length(bq.arg_slabs)

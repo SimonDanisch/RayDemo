@@ -251,17 +251,17 @@ function shorten_device_name(full_name::AbstractString, patterns)
 end
 
 """
-    vulkan_context() -> VkContext or nothing
+    gpu_device() -> Mantle device or nothing
 
-The Vulkan device Mantle renders on, when its Vulkan extension is loaded. The
-runtime is `MantleVulkanExt` since the 2026-08-27 split — `Lava.vk_context`
-does not exist — and the extension is not exported, so it is fetched by name.
+The device Mantle renders on, or `nothing` if Mantle is not loaded.
+
+`Mantle.Device()` is the whole answer now: it picks the backend this build
+compiled in, so there is no API to name and no extension to fetch. This used to
+reach for `MantleVulkanExt` by name, which stopped existing.
 """
-function vulkan_context()
+function gpu_device()
     isdefined(Main, :Mantle) || return nothing
-    mve = Base.get_extension(getfield(Main, :Mantle), :MantleVulkanExt)
-    mve === nothing && return nothing
-    return mve.vk_context()
+    return getfield(Main, :Mantle).Device()
 end
 
 """
@@ -272,8 +272,9 @@ Detect the GPU and return a short name for filenames.
 function detect_gpu_name()
     # The device the renders actually run on, when Vulkan is loaded. On a
     # machine with two GPUs the driver tools below name whichever they like.
-    ctx = vulkan_context()
-    ctx === nothing || return shorten_device_name(ctx.device_name, GPU_SHORT_NAMES)
+    dev = gpu_device()
+    dev === nothing ||
+        return shorten_device_name(getfield(Main, :Mantle).devicename(dev), GPU_SHORT_NAMES)
 
     # Metal names the device directly, and there is no Vulkan loader on a Mac to
     # fall through to.
@@ -342,29 +343,32 @@ end
 Detect available backends. Returns list of (name, config) pairs.
 
 Checks what GPU packages are loaded in Main. Load them before calling:
-  `using Lava`    for Vulkan
+  `using Mantle`  for this platform's GPU
   `using AMDGPU`  for AMD
   `using CUDA`    for NVIDIA
 """
 function detect_backends()
     backends = Pair{String, Any}[]
 
-    # Vulkan, through Mantle: `Mantle.defaultbackend()` is the backend whose
-    # extension loaded (`using Lava` on a machine with a driver), the same call
-    # `common.jl` makes for the scenes. `Lava.LavaBackend` and `Lava.vk_context`
-    # do not exist since the split; the device's ray-tracing support is read
-    # off the context the extension holds.
-    ctx = vulkan_context()
-    if ctx !== nothing
-        backend = getfield(Main, :Mantle).defaultbackend()
+    # The GPU, through Mantle: `Mantle.defaultbackend()` is the backend this
+    # build compiled in, the same call `common.jl` makes for the scenes. Nothing
+    # here names Vulkan — `Device()` answers on whichever backend is present.
+    dev = gpu_device()
+    if dev !== nothing
+        Mantle = getfield(Main, :Mantle)
+        backend = Mantle.defaultbackend()
         # HW RT first: its compiled kernels are shared with SW RT, avoiding
         # cold-start compilation of large workqueue kernels that can hang
         # AMD's Windows shader compiler.
-        if ctx.rt_pipeline_properties !== nothing
+        #
+        # `supports_rt_pipeline(backend)` and not `ctx.rt_pipeline_properties`:
+        # the predicate is what Mantle offers for this, and the field it used to
+        # read is one backend's.
+        if Mantle.supports_rt_pipeline(backend)
             push!(backends, "lava_hw" => (; backend, hw_accel=true))
         end
         push!(backends, "lava_sw" => (; backend, hw_accel=false))
-        @info "Detected: Vulkan via Mantle" device=ctx.device_name
+        @info "Detected: GPU via Mantle" device=Mantle.devicename(dev)
     end
 
     # Metal (Apple GPUs). Same shape as Lava above and for the same reason: the
@@ -590,7 +594,7 @@ function run_julia_benchmarks(;
         # Clean up GPU resources between scenes: close the integrator (frees its
         # render state), collect, and wait for everything still in flight so the
         # next scene starts on an idle device. This used to call
-        # `Lava.vk_flush!()` and `Lava.flush_deferred_frees!()` inside a bare
+        # `Mantle.flush!()` and `Mantle.drain!()` inside a bare
         # try/catch; neither exists since the split, so it silently did nothing.
         Base.invokelatest(close, integrator)
         GC.gc(true)
@@ -873,7 +877,7 @@ function run_all_render_benchmarks(;
         isempty(missing) || @warn "Requested backends not available" missing
     end
     if isempty(detected)
-        @warn "No backends selected. Load GPU packages first: using Lava, AMDGPU, CUDA"
+        @warn "No backends selected. Load GPU packages first: using Mantle, AMDGPU, CUDA"
         return
     end
 

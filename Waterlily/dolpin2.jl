@@ -7,7 +7,7 @@
 #   4. Combined streamlines + vorticity volume
 
 using WaterLily, StaticArrays, BiotSavartBCs, WaterLilyMeshBodies, Random
-using Lava, KernelAbstractions
+using Mantle, KernelAbstractions
 using AMDGPU
 using GLMakie, RayMakie, Hikari
 using GeometryBasics, FileIO, Colors, ImageCore
@@ -15,14 +15,14 @@ using LinearAlgebra: norm, cross, normalize
 using JLD2
 
 folder = joinpath(dirname(pathof(WaterLilyMeshBodies)), "..", "example")
-sim_mem = Lava.LavaArray  # switch to ROCArray to run the sim on AMDGPU
+sim_mem = Mantle.LavaArray  # switch to ROCArray to run the sim on AMDGPU
 cache_file = joinpath(@__DIR__, "dolphin_sim_$(sim_mem === ROCArray ? "rocm" : "lava").jld2")
 
-# Rendering backend. Lava.LavaBackend() (HW RT available) or AMDGPU.ROCBackend() (SW BVH only).
-render_device = Lava.LavaBackend()
+# Rendering backend. Mantle.defaultbackend() (HW RT available) or AMDGPU.ROCBackend() (SW BVH only).
+render_device = Mantle.defaultbackend()
 render_device = AMDGPU.ROCBackend()  # --- IGNORE ---
-render_hw_accel = render_device isa Lava.LavaBackend  # HW RT only on Lava
-render_tag = render_device isa Lava.LavaBackend ? "lava" : "rocm"
+render_hw_accel = render_device isa Mantle.LavaBackend  # HW RT only on Lava
+render_tag = render_device isa Mantle.LavaBackend ? "lava" : "rocm"
 output_file = joinpath(@__DIR__, "dolphin_4panel_$(render_tag).png")
 
 # ============================================================================
@@ -426,10 +426,8 @@ end
 # Run
 # ============================================================================
 
-Lava.DEFERRED_FREE_WARN_THRESHOLD[] = 100000
-
 if !isfile(cache_file)
-    Lava.clear_spirv_disk_cache!()
+    Mantle.clear_spirv_disk_cache!()
     println("Running dolphin simulation on $(sim_mem) (scale=3, Re=1e5, tU/L=5)...")
     sim = dolphin(; scale=3f0, Re=1e5, mem=sim_mem)
     sim_step!(sim, 5; verbose=true, remeasure=false)
@@ -450,7 +448,7 @@ function render_all(; spp=512)
     cam_blue = (Vec3f(bcx+90, bcy-55, bcz+35), Vec3f(bcx-5, bcy+20, bcz-3))
 
     RayMakie.activate!()
-    Lava.clear_spirv_disk_cache!()
+    Mantle.clear_spirv_disk_cache!()
 
     domain_size = size(data.u)[1:3]
 

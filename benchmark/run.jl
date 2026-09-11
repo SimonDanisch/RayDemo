@@ -6,7 +6,7 @@
 #
 # Usage — load your backend(s) first, then include and run:
 #
-#   using Lava, AMDGPU        # load whichever backends you have
+#   using Mantle, AMDGPU      # Mantle brings this platform's GPU backend
 #   include("RayDemo/benchmark/run.jl")
 #
 # Results end up in RayDemo/benchmark/results/:

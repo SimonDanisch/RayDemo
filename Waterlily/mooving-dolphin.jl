@@ -28,7 +28,7 @@ using GLMakie, Meshing, Lava
 
 Makie.inline!(false)
 
-dolphin_sim = dolphin(L=256, mem=Lava.LavaArray);
+dolphin_sim = dolphin(L=256, mem=Mantle.LavaArray);
 sim_step!(dolphin_sim, 1; verbose=true)
 viz!(dolphin_sim, body2mesh=true, body_color=:snow2,
     azimuth=-0.5, fig_size=(1280, 720), hidedecorations=true,

@@ -6,7 +6,7 @@
 # panel context and needs to be fixed.
 using Pkg; Pkg.activate("/sim/Programmieren/VulkanDev")
 include("/sim/Programmieren/VulkanDev/RayDemo/Waterlily/dolphin.jl")
-using Lava, FileIO
+using Mantle, FileIO
 
 const OUT_PATH = joinpath(@__DIR__, "full4_single.png")
 const STEP = 100
@@ -31,5 +31,6 @@ println("  saved $OUT_PATH ($(filesize(OUT_PATH) ÷ 1024) KiB)")
 # top-right quadrant is rows 1..H/2, cols W/2+1..W.
 H, W = size(img)
 top_right = img[1:H÷2, W÷2+1:end]
-save(joinpath(@__DIR__, "full4_blue_crop.png"), top_right)
-println("  saved blue-panel crop ($(filesize(joinpath(@__DIR__, \"full4_blue_crop.png\")) ÷ 1024) KiB)")
+crop_path = joinpath(@__DIR__, "full4_blue_crop.png")
+save(crop_path, top_right)
+println("  saved blue-panel crop ($(filesize(crop_path) ÷ 1024) KiB)")

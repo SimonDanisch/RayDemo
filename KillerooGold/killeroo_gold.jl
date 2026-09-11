@@ -41,7 +41,7 @@ function render_scene(;
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    using Lava
+    using Mantle
     scene = create_scene()
     screen = RayMakie.vulkan_viewer(scene;
         integrator=Hikari.VolPath(max_depth=8, samples=64, hw_accel=true))

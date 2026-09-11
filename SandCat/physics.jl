@@ -38,11 +38,11 @@ the post-step values into `positions_out[i]` and `velocities_out[i]`.
 `tri_normals[k]` holds the geometric normal of cat triangle `k` (1-indexed).
 """
 function pbd_step_kernel(
-        positions_in::Lava.LavaDeviceArray{Point3f, 1},
-        velocities_in::Lava.LavaDeviceArray{Vec3f, 1},
-        positions_out::Lava.LavaDeviceArray{Point3f, 1},
-        velocities_out::Lava.LavaDeviceArray{Vec3f, 1},
-        tri_normals::Lava.LavaDeviceArray{Vec3f, 1},
+        positions_in::Mantle.LavaDeviceArray{Point3f, 1},
+        velocities_in::Mantle.LavaDeviceArray{Vec3f, 1},
+        positions_out::Mantle.LavaDeviceArray{Point3f, 1},
+        velocities_out::Mantle.LavaDeviceArray{Vec3f, 1},
+        tri_normals::Mantle.LavaDeviceArray{Vec3f, 1},
         floor_y::Float32,
         x_min::Float32,
         x_max::Float32,

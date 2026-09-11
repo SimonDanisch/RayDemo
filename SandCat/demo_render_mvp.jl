@@ -11,7 +11,7 @@
 #   julia> result = main(; n_grains=1000)    # smoke test (1k)
 #   julia> result = main(; n_grains=1_000_000)  # full demo (1M)
 
-using Lava
+using Mantle
 using Raycore
 using Hikari
 using RayMakie
@@ -43,11 +43,11 @@ function build_demo(; n_grains::Int = 1_000_000,
         cpu_quats[i] = Vec4f(q[1]/n, q[2]/n, q[3]/n, q[4]/n)
     end
 
-    positions = Lava.LavaArray(cpu_positions)
-    rotations = Lava.LavaArray(cpu_quats)
+    positions = Mantle.LavaArray(cpu_positions)
+    rotations = Mantle.LavaArray(cpu_quats)
 
     # 2. Build Hikari scene with hw_accel=true so meshscatter_create_gpu! works.
-    backend = Lava.LavaBackend()
+    backend = Mantle.defaultbackend()
     scene = Hikari.Scene(; backend=backend, hw_accel=true)
 
     # Lights: spectral VolPath uses photometric normalization internally.

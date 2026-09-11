@@ -2,7 +2,7 @@
 # Cam3 + lights_warm kept EXACTLY as in construct_scene — no tweaks.
 using Pkg; Pkg.activate("/sim/Programmieren/VulkanDev")
 include("/sim/Programmieren/VulkanDev/RayDemo/Waterlily/dolphin.jl")
-using Lava, FileIO
+using Mantle, FileIO
 
 const OUT_PATH = joinpath(@__DIR__, "smoke_single.png")
 const STEP = 100

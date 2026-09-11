@@ -4,7 +4,7 @@
 # Simple @elapsed timing (not BenchmarkTools) for cross-backend comparison.
 #
 # Usage:
-#   using Lava, AMDGPU  # load backends first
+#   using Mantle, AMDGPU  # Mantle brings this platform's GPU backend
 #   include("RayDemo/benchmark/run_ak_benchmarks.jl")
 #   run_ak_benchmarks()
 
@@ -214,7 +214,7 @@ function run_ak_benchmarks(;
     mkpath(AK_RESULTS_DIR)
 
     if backends === nothing
-        backends = _detect_ak_backends()
+        backends = detect_ak_backends()
     elseif eltype(backends) <: AbstractString
         # Filter detected AK backends by name. Accepts both AK-native names
         # ("lava", "cpu") and render-side names ("lava_hw", "lava_sw") — the
@@ -223,7 +223,7 @@ function run_ak_benchmarks(;
                                        r"^metal_(hw|sw)$" => "metal") for b in backends])
         # Skip backends that don't have an AK equivalent (pbrt).
         requested = Set(b for b in requested if !startswith(b, "pbrt_"))
-        backends = filter(t -> t[1] in requested, _detect_ak_backends())
+        backends = filter(t -> t[1] in requested, detect_ak_backends())
     end
 
     all_results = OrderedDict{String, Any}()
@@ -286,16 +286,20 @@ function run_ak_benchmarks(;
     return all_results
 end
 
-function _detect_ak_backends()
+function detect_ak_backends()
     backends = Tuple[]
 
-    if isdefined(Main, :Lava)
-        Lava = getfield(Main, :Lava)
-        try
-            Lava.LavaArray(Float32[0])
-            push!(backends, ("lava", Lava.LavaArray, () -> Lava.vk_flush!(Lava.vk_context())))
-            @info "AK backend: Lava"
-        catch; end
+    # `using Mantle`, not `using Lava`: Mantle owns the array type and the queue
+    # since the split, and it picks its own backend. `availablebackends()` is the
+    # probe that ANSWERS rather than throws, so there is nothing here to swallow
+    # — the old `try/catch; end` hid an `UndefVarError` for `Lava.LavaArray` and
+    # reported "no lava backend" on a machine with a working GPU.
+    if isdefined(Main, :Mantle)
+        Mantle = getfield(Main, :Mantle)
+        if !isempty(Mantle.availablebackends())
+            push!(backends, ("lava", Mantle.LavaArray, () -> Mantle.flush!(Mantle.Device())))
+            @info "AK backend: Mantle" backend=first(Mantle.availablebackends())
+        end
     end
 
     if isdefined(Main, :Metal)

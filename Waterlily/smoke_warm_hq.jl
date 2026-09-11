@@ -4,7 +4,7 @@
 # update_scene! for cached frames on restarts.
 using Pkg; Pkg.activate("/sim/Programmieren/VulkanDev")
 include("/sim/Programmieren/VulkanDev/RayDemo/Waterlily/dolphin.jl")
-using Lava, FileIO, Dates
+using Mantle, FileIO, Dates
 
 const OUT_PATH   = joinpath(@__DIR__, "smoke_warm_hq.mp4")
 const N_FRAMES   = 450
@@ -65,7 +65,7 @@ try
         new_vc = compute_vorticity(step)
         Makie.update!(p.vol; arg4=new_vc)
         GC.gc(true)
-        gpu = Lava.GPU_LIVE_BYTES[] >> 20
+        gpu = Mantle.gpu_live_bytes() >> 20
         println("frame $i/$N_FRAMES  gpu=$(gpu)MiB  t=$(round(time()-t0, digits=1))s")
         flush(stdout)
     end

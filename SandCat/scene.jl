@@ -69,7 +69,7 @@ function spawn_grain_grid(; n_grains::Int,
 end
 
 """
-    grain_aabbs(positions, radius) -> Vector{Lava.AABB}
+    grain_aabbs(positions, radius) -> Vector{Mantle.AABB}
 
 Build per-grain AABBs around each `Point3f` position.  Half-extent is `2*radius`,
 NOT `radius`: the kernel's grain-grain neighbor query is a degenerate ray
@@ -86,7 +86,7 @@ function grain_aabbs(positions::AbstractVector{Point3f}, radius::Float32)
     # accepts neighbours at exactly d=2r) are not lost to a half-open AABB
     # containment test in the rayQuery driver.
     h = Vec3f(2.05f0 * radius, 2.05f0 * radius, 2.05f0 * radius)
-    return Lava.AABB[Lava.AABB(p - h, p + h) for p in positions]
+    return Mantle.AABB[Mantle.AABB(p - h, p + h) for p in positions]
 end
 
 """

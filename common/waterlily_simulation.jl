@@ -2,7 +2,7 @@ using WaterLily
 using Printf, JLD2
 using BiotSavartBCs
 using WaterLily: dot, sgs!, inside, ω_mag
-using Lava
+using Mantle
 const PARAMS = (
     # Grid parameters
     p=4,                      # Grid resolution exponent (m = 3 * 2^p)
