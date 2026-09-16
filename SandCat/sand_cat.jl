@@ -25,6 +25,7 @@ using Random
 using FileIO
 using Makie
 using Makie: RGBf
+import Mantle          # `LavaBackend` and `LavaArray` live here, not in Lava
 
 const Mat4f = SMatrix{4, 4, Float32, 16}
 
@@ -51,7 +52,7 @@ mutable struct SandCatScene
 
     # Pre-computed per-triangle geometric normals (CPU + GPU)
     tri_normals::Vector{Vec3f}
-    tri_normals_gpu::Lava.LavaArray{Vec3f, 1}
+    tri_normals_gpu::Mantle.LavaArray{Vec3f, 1}
 
     # GPU acceleration structures
     tlas::Lava.HWTLAS
@@ -60,7 +61,7 @@ mutable struct SandCatScene
     cat_handle::Union{Nothing, Raycore.TLASHandle}
 
     # Configuration
-    backend::Lava.LavaBackend
+    backend::Mantle.LavaBackend
 end
 
 """
@@ -108,7 +109,7 @@ function build_scene(; n_grains::Int = 1_000_000,
         tri_normals = [Vec3f(0f0, 1f0, 0f0)]
         tri_normals_gpu = LavaArray(tri_normals)
 
-        backend = Lava.LavaBackend()
+        backend = Mantle.LavaBackend()
         aabbs = grain_aabbs(positions, radius)
         grain_blas = Lava.as_build() do ctx
             Lava.build_blas_aabb(ctx, aabbs)
@@ -146,7 +147,7 @@ function build_scene(; n_grains::Int = 1_000_000,
         positions = spawn_grain_grid(; n_grains, region_min, region_max, jitter=j, rng)
         velocities = fill(Vec3f(0f0, 0f0, 0f0), n_grains)
 
-        backend = Lava.LavaBackend()
+        backend = Mantle.LavaBackend()
         aabbs = grain_aabbs(positions, radius)
         grain_blas = Lava.as_build() do ctx
             Lava.build_blas_aabb(ctx, aabbs)
@@ -193,10 +194,10 @@ function rebuild_grain_blas!(scene::SandCatScene)
 end
 
 mutable struct PingState
-    pos_in::Lava.LavaArray{Point3f, 1}
-    pos_out::Lava.LavaArray{Point3f, 1}
-    vel_in::Lava.LavaArray{Vec3f, 1}
-    vel_out::Lava.LavaArray{Vec3f, 1}
+    pos_in::Mantle.LavaArray{Point3f, 1}
+    pos_out::Mantle.LavaArray{Point3f, 1}
+    vel_in::Mantle.LavaArray{Vec3f, 1}
+    vel_out::Mantle.LavaArray{Vec3f, 1}
 end
 
 """

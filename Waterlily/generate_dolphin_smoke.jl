@@ -10,6 +10,7 @@ println("[$(Dates.now())] starting")
 
 using WaterLily, StaticArrays, BiotSavartBCs, WaterLilyMeshBodies, Lava
 using JLD2
+import Mantle          # `LavaBackend` and `LavaArray` live here, not in Lava
 
 # ── sim setup ───────────────────────────────────────────────────────────────
 # Mirrors mooving-dolphin.jl exactly: L=256, sim_step!(sim,1) warmup, then viz!(duration=2, step=0.01)
@@ -21,7 +22,7 @@ const DT_SIM_PER_FRAME = 0.01f0
 const OUTDIR = joinpath(@__DIR__, "dolphin_smoke_L$(L_SIM)_steps")
 isdir(OUTDIR) || mkpath(OUTDIR)
 
-function dolphin_sim(; L=L_SIM, Re=1e6, U=1, A=0.1, St=0.3, k=5.3, mem=Lava.LavaArray, T=Float32)
+function dolphin_sim(; L=L_SIM, Re=1e6, U=1, A=0.1, St=0.3, k=5.3, mem=Mantle.LavaArray, T=Float32)
     mesh_path = joinpath(@__DIR__, "low_poly_dolphin.stl")
     probe = MeshBody(mesh_path)
     lo, up = probe.bvh.nodes[1].lo, probe.bvh.nodes[1].up

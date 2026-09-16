@@ -13,16 +13,17 @@ using GLMakie, RayMakie, Hikari
 using GeometryBasics, FileIO, Colors, ImageCore
 using LinearAlgebra: norm, cross, normalize
 using JLD2
+import Mantle          # `LavaBackend` and `LavaArray` live here, not in Lava
 
 folder = joinpath(dirname(pathof(WaterLilyMeshBodies)), "..", "example")
-sim_mem = Lava.LavaArray  # switch to ROCArray to run the sim on AMDGPU
+sim_mem = Mantle.LavaArray  # switch to ROCArray to run the sim on AMDGPU
 cache_file = joinpath(@__DIR__, "dolphin_sim_$(sim_mem === ROCArray ? "rocm" : "lava").jld2")
 
-# Rendering backend. Lava.LavaBackend() (HW RT available) or AMDGPU.ROCBackend() (SW BVH only).
-render_device = Lava.LavaBackend()
+# Rendering backend. Mantle.LavaBackend() (HW RT available) or AMDGPU.ROCBackend() (SW BVH only).
+render_device = Mantle.LavaBackend()
 render_device = AMDGPU.ROCBackend()  # --- IGNORE ---
-render_hw_accel = render_device isa Lava.LavaBackend  # HW RT only on Lava
-render_tag = render_device isa Lava.LavaBackend ? "lava" : "rocm"
+render_hw_accel = render_device isa Mantle.LavaBackend  # HW RT only on Lava
+render_tag = render_device isa Mantle.LavaBackend ? "lava" : "rocm"
 output_file = joinpath(@__DIR__, "dolphin_4panel_$(render_tag).png")
 
 # ============================================================================

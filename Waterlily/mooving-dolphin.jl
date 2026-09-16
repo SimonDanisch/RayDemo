@@ -25,10 +25,11 @@ function dolphin(; L=64, Re=1e6, U=1, A=0.1, St=0.3, k=5.3, mem=Array, T=Float32
 end
 
 using GLMakie, Meshing, Lava
+import Mantle          # `LavaBackend` and `LavaArray` live here, not in Lava
 
 Makie.inline!(false)
 
-dolphin_sim = dolphin(L=256, mem=Lava.LavaArray);
+dolphin_sim = dolphin(L=256, mem=Mantle.LavaArray);
 sim_step!(dolphin_sim, 1; verbose=true)
 viz!(dolphin_sim, body2mesh=true, body_color=:snow2,
     azimuth=-0.5, fig_size=(1280, 720), hidedecorations=true,

@@ -1,7 +1,7 @@
 # MWE: Lava vs ROCBackend volume rendering
 #
 # Isolates the volume-rendering path to compare Hikari.VolPath on
-# Lava.LavaBackend (HW RT) vs AMDGPU.ROCBackend (SW BVH) with the same
+# Mantle.LavaBackend (HW RT) vs AMDGPU.ROCBackend (SW BVH) with the same
 # density field, lights, camera, and material parameters that panel_blue_volume
 # and panel_warm_hero in dolpin2.jl use.
 #
@@ -10,6 +10,7 @@
 using Lava, AMDGPU
 using GLMakie, RayMakie, Hikari
 using GeometryBasics, FileIO, Colors
+import Mantle          # `LavaBackend` and `LavaArray` live here, not in Lava
 
 # --- Synthetic density field -------------------------------------------------
 # Elongated gaussian blob — stand-in for the vorticity volume. Values are on the
@@ -60,7 +61,7 @@ end
 
 # --- Render helper -----------------------------------------------------------
 function render_with(device, tag; spp=128)
-    hw = device isa Lava.LavaBackend
+    hw = device isa Mantle.LavaBackend
     s = build_scene()
     println("Rendering with $(tag) (hw_accel=$hw)...")
     img = @time colorbuffer(s;
@@ -74,7 +75,7 @@ function render_with(device, tag; spp=128)
 end
 
 RayMakie.activate!()
-img_lava = render_with(Lava.LavaBackend(),   "lava"; spp=128)
+img_lava = render_with(Mantle.LavaBackend(),   "lava"; spp=128)
 img_rocm = render_with(AMDGPU.ROCBackend(), "rocm"; spp=128)
 
 # Side-by-side

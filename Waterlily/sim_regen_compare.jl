@@ -21,6 +21,7 @@ println("[$(Dates.now())] starting sim regen + cache compare")
 
 using WaterLily, StaticArrays, BiotSavartBCs, WaterLilyMeshBodies, Lava
 using JLD2, Statistics
+import Mantle          # `LavaBackend` and `LavaArray` live here, not in Lava
 
 const L_SIM    = 256
 const WARMUP   = 1.0f0
@@ -30,7 +31,7 @@ const CACHE_DIR = joinpath(@__DIR__, "dolphin_smoke_L$(L_SIM)_steps")
 # Same dolphin_sim helper as generate_dolphin_smoke.jl (mirrored here so this
 # script is self-contained).
 function dolphin_sim(; L=L_SIM, Re=1e6, U=1, A=0.1, St=0.3, k=5.3,
-                       mem=Lava.LavaArray, T=Float32)
+                       mem=Mantle.LavaArray, T=Float32)
     mesh_path = joinpath(@__DIR__, "low_poly_dolphin.stl")
     probe = MeshBody(mesh_path)
     lo, up = probe.bvh.nodes[1].lo, probe.bvh.nodes[1].up

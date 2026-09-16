@@ -22,6 +22,7 @@ using Adapt
 import KernelAbstractions
 using Random
 using FileIO
+import Mantle          # `LavaBackend` and `LavaArray` live here, not in Lava
 
 function build_demo(; n_grains::Int = 1_000_000,
                     radius::Float32 = 0.005f0,
@@ -43,11 +44,11 @@ function build_demo(; n_grains::Int = 1_000_000,
         cpu_quats[i] = Vec4f(q[1]/n, q[2]/n, q[3]/n, q[4]/n)
     end
 
-    positions = Lava.LavaArray(cpu_positions)
-    rotations = Lava.LavaArray(cpu_quats)
+    positions = Mantle.LavaArray(cpu_positions)
+    rotations = Mantle.LavaArray(cpu_quats)
 
     # 2. Build Hikari scene with hw_accel=true so meshscatter_create_gpu! works.
-    backend = Lava.LavaBackend()
+    backend = Mantle.LavaBackend()
     scene = Hikari.Scene(; backend=backend, hw_accel=true)
 
     # Lights: spectral VolPath uses photometric normalization internally.

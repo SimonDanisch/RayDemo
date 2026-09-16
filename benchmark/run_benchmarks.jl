@@ -9,11 +9,12 @@
 #   run_all_benchmarks(scenes=["materials"]) # specific scenes
 #
 # Or manually:
-#   run_julia_benchmarks(backend=Lava.LavaBackend(), backend_name="lava_sw")
+#   run_julia_benchmarks(backend=Mantle.LavaBackend(), backend_name="lava_sw")
 #   run_pbrt_benchmarks(pbrt_mode="cpu")    # or "gpu" for OptiX
 
 using JSON3, Dates, OrderedCollections
 using RayMakie, Hikari, Makie
+import Mantle          # `LavaBackend` and `LavaArray` live here, not in Lava
 
 const RAYDEMO_DIR = joinpath(@__DIR__, "..")
 const BENCHMARK_RESULTS_DIR = joinpath(@__DIR__, "results")
@@ -179,6 +180,10 @@ const GPU_SHORT_NAMES = [
     r"7900\s*gre"i => "7900gre",
     r"7800\s*xt"i => "7800xt",
     r"7600\s*xt"i => "7600xt",
+    # Strix Halo APU: the Vulkan name is "Radeon 8060S Graphics (RADV STRIX_HALO)",
+    # so match the model number rather than the vendor string.
+    r"8060s"i => "8060s",
+    r"8050s"i => "8050s",
     r"rtx\s*4090"i => "rtx4090",
     r"rtx\s*4080"i => "rtx4080",
     r"rtx\s*4070"i => "rtx4070",
@@ -213,6 +218,10 @@ const CPU_SHORT_NAMES = [
     r"9950x"i => "9950x",
     r"9900x"i => "9900x",
     r"9800x3d"i => "9800x3d",
+    # "AMD RYZEN AI MAX+ 395 w/ Radeon 8060S" — the trailing iGPU name would
+    # otherwise drag the whole string into the filename.
+    r"ai\s*max\+?\s*395"i => "aimax395",
+    r"ai\s*max\+?\s*390"i => "aimax390",
     r"13900k"i => "13900k",
     r"14900k"i => "14900k",
     r"i9.?13900"i => "13900",
@@ -339,7 +348,7 @@ function detect_backends()
     if isdefined(Main, :Lava)
         try
             Lava = getfield(Main, :Lava)
-            backend = Lava.LavaBackend()
+            backend = Mantle.LavaBackend()
             # HW RT first: its compiled kernels are shared with SW RT, avoiding
             # cold-start compilation of large workqueue kernels that can hang
             # AMD's Windows shader compiler.

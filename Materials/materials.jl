@@ -8,6 +8,7 @@
 
 include("../common/common.jl")
 using GeometryBasics, Colors
+import Mantle          # `LavaBackend` and `LavaArray` live here, not in Lava
 
 function make_perlin_texture(resolution::Int; scale=4.0, bias=0.5, contrast=1.0)
     tex = Matrix{Float32}(undef, resolution, resolution)
@@ -223,7 +224,7 @@ end
 
 if abspath(PROGRAM_FILE) == @__FILE__
     using Lava
-    DEVICE = Lava.LavaBackend()
+    DEVICE = Mantle.LavaBackend()
     sensor = Hikari.PixelSensor(; iso=50, exposure_time=1.0, whitebalance=0)
     scene = create_scene()
     display(scene; sensor=sensor, integrator=Hikari.VolPath(; samples=1, max_depth=50, hw_accel=true))

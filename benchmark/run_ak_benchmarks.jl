@@ -12,6 +12,7 @@ using JSON3, Dates, OrderedCollections
 import AcceleratedKernels as AK
 using KernelAbstractions
 using StableRNGs
+import Mantle          # `LavaBackend` and `LavaArray` live here, not in Lava
 
 const AK_RESULTS_DIR = joinpath(@__DIR__, "results")
 
@@ -292,8 +293,8 @@ function _detect_ak_backends()
     if isdefined(Main, :Lava)
         Lava = getfield(Main, :Lava)
         try
-            Lava.LavaArray(Float32[0])
-            push!(backends, ("lava", Lava.LavaArray, () -> Lava.vk_flush!(Lava.vk_context())))
+            Mantle.LavaArray(Float32[0])
+            push!(backends, ("lava", Mantle.LavaArray, () -> Lava.vk_flush!(Lava.vk_context())))
             @info "AK backend: Lava"
         catch; end
     end

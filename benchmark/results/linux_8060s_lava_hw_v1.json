@@ -1,0 +1,87 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "8060s",
+        "cpu_name": "aimax395",
+        "device_name": "8060s",
+        "backend_name": "lava_hw",
+        "version": "v1",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-09-09 17:25:38",
+        "julia_version": "1.12.7",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "crown": {
+            "resolution": [
+                1000,
+                1400
+            ],
+            "samples": 16,
+            "max_depth": 100,
+            "hw_accel": true,
+            "timings": [
+                6.357140796,
+                6.346227253,
+                6.307836308
+            ],
+            "median": 6.3462,
+            "min": 6.3078,
+            "max": 6.3571
+        },
+        "black_hole": {
+            "resolution": [
+                800,
+                450
+            ],
+            "samples": 32,
+            "max_depth": 100,
+            "hw_accel": true,
+            "timings": [
+                1.070229416,
+                1.051829128,
+                1.09765221
+            ],
+            "median": 1.0702,
+            "min": 1.0518,
+            "max": 1.0977
+        },
+        "killeroo_gold": {
+            "resolution": [
+                1368,
+                1026
+            ],
+            "samples": 32,
+            "max_depth": 5,
+            "hw_accel": true,
+            "timings": [
+                2.301450529,
+                2.298992728,
+                2.329302083
+            ],
+            "median": 2.3015,
+            "min": 2.299,
+            "max": 2.3293
+        },
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                9.320028701,
+                9.358328811,
+                9.319917565
+            ],
+            "median": 9.32,
+            "min": 9.3199,
+            "max": 9.3583
+        }
+    }
+}
