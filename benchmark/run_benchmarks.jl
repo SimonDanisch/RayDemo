@@ -542,8 +542,9 @@ function run_julia_benchmarks(;
         println("done.")
 
         sensor = Base.invokelatest(Hikari.PixelSensor; cfg.sensor_kwargs...)
-        integrator = Base.invokelatest(Hikari.VolPath;
-            samples=cfg.samples, max_depth=cfg.max_depth, hw_accel=hw_accel, sensor=sensor)
+        # RayMakie takes the path tracer's settings directly (it rejects
+        # `integrator` since d734602f5): each scene builds its own VolPath.
+        rt = (; samples=cfg.samples, max_depth=cfg.max_depth, hw_accel=hw_accel, sensor=sensor)
         Base.invokelatest(RayMakie.activate!; device=backend, cfg.colorbuffer_kwargs...)
 
         # Warmup
@@ -552,7 +553,7 @@ function run_julia_benchmarks(;
         for i in 1:n_warmup
             try
                 img = Base.invokelatest(Makie.colorbuffer, scene;
-                    backend=RayMakie, integrator=integrator)
+                    backend=RayMakie, rt...)
             catch e
                 @warn "  Warmup $i failed" exception=(e, catch_backtrace())
             end
@@ -580,7 +581,7 @@ function run_julia_benchmarks(;
             try
                 t = @elapsed begin
                     Base.invokelatest(Makie.colorbuffer, scene;
-                        backend=RayMakie, integrator=integrator)
+                        backend=RayMakie, rt...)
                 end
                 push!(timings, t)
                 println("    Trial $trial: $(round(t, digits=3))s")
@@ -591,12 +592,9 @@ function run_julia_benchmarks(;
             end
         end
 
-        # Clean up GPU resources between scenes: close the integrator (frees its
-        # render state), collect, and wait for everything still in flight so the
-        # next scene starts on an idle device. This used to call
-        # `Mantle.flush!()` and `Mantle.drain!()` inside a bare
-        # try/catch; neither exists since the split, so it silently did nothing.
-        Base.invokelatest(close, integrator)
+        # Clean up GPU resources between scenes: collect, and wait for
+        # everything still in flight so the next scene starts on an idle
+        # device. (The VolPath is the scene's, RayMakie's, and goes with it.)
         GC.gc(true)
         Base.invokelatest(getfield(Main, :Mantle).waitidle, backend)
 
