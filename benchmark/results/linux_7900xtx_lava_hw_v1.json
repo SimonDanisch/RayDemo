@@ -1,0 +1,36 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "7900xtx",
+        "cpu_name": "7900x",
+        "device_name": "7900xtx",
+        "backend_name": "lava_hw",
+        "version": "v1",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-09-10 14:20:57",
+        "julia_version": "1.12.7",
+        "cpu_threads": 24
+    },
+    "scenes": {
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                0.615596162,
+                0.553137572,
+                0.553219916
+            ],
+            "median": 0.5532,
+            "min": 0.5531,
+            "max": 0.6156
+        }
+    }
+}

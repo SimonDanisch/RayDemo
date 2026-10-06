@@ -1,0 +1,25 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "7900xtx",
+        "cpu_name": "7900x",
+        "device_name": "7900xtx",
+        "backend_name": "lava_hw",
+        "version": "pre_my_work",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-09-10 16:05:18",
+        "julia_version": "1.12.7",
+        "cpu_threads": 24
+    },
+    "scenes": {
+        "materials": {
+            "error": "MethodError: no method matching MantleVulkanExt.VulkanTLAS{Raycore.Triangle{Hikari.TriangleMeta}}(::MantleVulkanExt.LavaBackend, ::BatchQueue{Vulkan.Device, Vulkan.Queue, Vulkan.CommandPool, MantleVulkanExt.Submission, MantleVulkanExt.OneShot, Vulkan.Semaphore, MantleVulkanExt.VkContext, UInt64}, ::Vector{MantleVulkanExt.LavaBLAS}, ::Vector{Vector{Raycore.Triangle{Hikari.TriangleMeta}}}, ::Vector{UInt32}, ::Vector{MantleVulkanExt.InstanceBatch{Raycore.Triangle{Hikari.TriangleMeta}}}, ::Dict{Raycore.TLASHandle, Int64}, ::UInt32, ::Raycore.Bounds3, ::Nothing, ::Nothing, ::Nothing, ::Nothing, ::Nothing, ::Nothing, ::Bool, ::Bool, ::Dict{Raycore.TLASHandle, Any})\nThe type `MantleVulkanExt.VulkanTLAS{Raycore.Triangle{Hikari.TriangleMeta}}` exists, but no method is defined for this combination of argument types when trying to construct it.\n\nClosest candidates are:\n  (::Type{MantleVulkanExt.VulkanTLAS{Tri}} where Tri)(::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any)\n   @ MantleVulkanExt /sim/Programmieren/VulkanDev/dev/Mantle/src/vulkan/raytracing/hwtlas.jl:106\n  MantleVulkanExt.VulkanTLAS{Tri}(::MantleVulkanExt.LavaBackend; bq) where Tri\n   @ MantleVulkanExt /sim/Programmieren/VulkanDev/dev/Mantle/src/vulkan/raytracing/hwtlas.jl:167\n"
+        },
+        "killeroo_gold": {
+            "error": "MethodError: no method matching MantleVulkanExt.VulkanTLAS{Raycore.Triangle{Hikari.TriangleMeta}}(::MantleVulkanExt.LavaBackend, ::BatchQueue{Vulkan.Device, Vulkan.Queue, Vulkan.CommandPool, MantleVulkanExt.Submission, MantleVulkanExt.OneShot, Vulkan.Semaphore, MantleVulkanExt.VkContext, UInt64}, ::Vector{MantleVulkanExt.LavaBLAS}, ::Vector{Vector{Raycore.Triangle{Hikari.TriangleMeta}}}, ::Vector{UInt32}, ::Vector{MantleVulkanExt.InstanceBatch{Raycore.Triangle{Hikari.TriangleMeta}}}, ::Dict{Raycore.TLASHandle, Int64}, ::UInt32, ::Raycore.Bounds3, ::Nothing, ::Nothing, ::Nothing, ::Nothing, ::Nothing, ::Nothing, ::Bool, ::Bool, ::Dict{Raycore.TLASHandle, Any})\nThe type `MantleVulkanExt.VulkanTLAS{Raycore.Triangle{Hikari.TriangleMeta}}` exists, but no method is defined for this combination of argument types when trying to construct it.\n\nClosest candidates are:\n  (::Type{MantleVulkanExt.VulkanTLAS{Tri}} where Tri)(::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any, ::Any)\n   @ MantleVulkanExt /sim/Programmieren/VulkanDev/dev/Mantle/src/vulkan/raytracing/hwtlas.jl:106\n  MantleVulkanExt.VulkanTLAS{Tri}(::MantleVulkanExt.LavaBackend; bq) where Tri\n   @ MantleVulkanExt /sim/Programmieren/VulkanDev/dev/Mantle/src/vulkan/raytracing/hwtlas.jl:167\n"
+        }
+    }
+}
