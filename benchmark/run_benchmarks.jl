@@ -329,26 +329,31 @@ Checks what GPU packages are loaded in Main. Load them before calling:
 function detect_backends()
     backends = Pair{String, Any}[]
 
-    # Lava (Vulkan) - check if loaded
-    if isdefined(Main, :Lava)
-        try
-            Lava = getfield(Main, :Lava)
-            backend = Lava.LavaBackend()
+    # Vulkan, through Mantle.
+    #
+    # It used to ask `Lava`: `Lava.LavaBackend()` for the backend and
+    # `Lava.vk_context().rt_pipeline_properties !== nothing` for hardware ray
+    # tracing. Neither name is Lava's since the split — Lava is the compiler and
+    # the backend lives in `MantleVulkanExt` — so this silently detected no
+    # backend at all and the whole benchmark reported "No backends selected".
+    #
+    # Asked of Mantle now, which is where the question belongs: `defaultbackend`
+    # picks whichever backend probed successfully, and `supports_rt_pipeline` is
+    # the portable spelling of "can this device trace in hardware". Neither
+    # mentions Vulkan, so this block does not have to be rewritten again for the
+    # next backend.
+    if isdefined(Main, :Mantle)
+        Mantle = getfield(Main, :Mantle)
+        if !isempty(Mantle.availablebackends())
+            backend = Mantle.defaultbackend()
             # HW RT first: its compiled kernels are shared with SW RT, avoiding
             # cold-start compilation of large workqueue kernels that can hang
             # AMD's Windows shader compiler.
-            has_rt = false
-            try
-                ctx = Lava.vk_context()
-                if ctx.rt_pipeline_properties !== nothing
-                    push!(backends, "lava_hw" => (; backend, hw_accel=true))
-                    has_rt = true
-                end
-            catch; end
+            if Mantle.supports_rt_pipeline(backend)
+                push!(backends, "lava_hw" => (; backend, hw_accel=true))
+            end
             push!(backends, "lava_sw" => (; backend, hw_accel=false))
-            @info "Detected: Lava (Vulkan)"
-        catch e
-            @info "Lava loaded but failed: $(sprint(showerror, e)[1:min(end,80)])"
+            @info "Detected: Mantle" backend rt=Mantle.supports_rt_pipeline(backend)
         end
     end
 
@@ -561,17 +566,16 @@ function run_julia_benchmarks(;
             @warn "  Closing integrator for $scene_name failed" exception=(e, catch_backtrace())
         end
         GC.gc(true)
-        if isdefined(Main, :Lava)
-            # Lava dropped the zero-arg convenience forms ("explicit arguments
-            # over implicit state") and renamed `flush_deferred_frees!` to
-            # `drain_deferred_frees!`, which takes the batch queue.
-            try
-                ctx = Main.Lava.vk_context()
-                Main.Lava.vk_flush!(ctx)
-                Main.Lava.drain_deferred_frees!(ctx.default_bq)
-            catch e
-                @warn "  Lava flush after $scene_name failed" exception=(e, catch_backtrace())
-            end
+        # Wait for the device before the next scene builds, so one scene's
+        # teardown cannot be charged to the next scene's timings.
+        #
+        # This used to be `Lava.vk_context()` + `Lava.vk_flush!` +
+        # `Lava.drain_deferred_frees!`, none of which is Lava's since the split —
+        # so it threw `UndefVarError` after every scene, into a `catch` that
+        # warned and carried on. `waitidle` is Mantle's portable spelling and it
+        # is what the deferred-free drain hangs off anyway.
+        if isdefined(Main, :Mantle) && !isempty(Main.Mantle.availablebackends())
+            Main.Mantle.waitidle(Main.Mantle.Device(Main.Mantle.VulkanAPI()))
         end
 
         if !isempty(timings)
