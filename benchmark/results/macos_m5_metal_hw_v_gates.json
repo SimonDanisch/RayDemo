@@ -1,0 +1,36 @@
+{
+    "metadata": {
+        "platform": "macos",
+        "gpu_name": "m5",
+        "cpu_name": "m5",
+        "device_name": "m5",
+        "backend_name": "metal_hw",
+        "version": "v_gates",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-09-10 18:24:22",
+        "julia_version": "1.12.7",
+        "cpu_threads": 4
+    },
+    "scenes": {
+        "crown": {
+            "resolution": [
+                1000,
+                1400
+            ],
+            "samples": 16,
+            "max_depth": 100,
+            "hw_accel": true,
+            "timings": [
+                5.490080875,
+                5.461474209,
+                5.4585215
+            ],
+            "median": 5.4615,
+            "min": 5.4585,
+            "max": 5.4901
+        }
+    }
+}
