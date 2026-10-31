@@ -13,7 +13,7 @@
 #   run_pbrt_benchmarks(pbrt_mode="cpu")    # or "gpu" for OptiX
 
 using JSON3, Dates, OrderedCollections
-using RayMakie, Hikari, Makie
+using RayMakie, Hikari, Makie, Mantle
 
 const RAYDEMO_DIR = joinpath(@__DIR__, "..")
 const BENCHMARK_RESULTS_DIR = joinpath(@__DIR__, "results")
@@ -549,18 +549,16 @@ function run_julia_benchmarks(;
             end
         end
 
-        # Clean up GPU resources between scenes to prevent DEVICE_LOST from
-        # accumulated dispatch state. Close integrator + force GC + flush deferred frees.
-        try
-            Base.invokelatest(close, integrator)
-        catch; end
-        GC.gc(true)
-        if isdefined(Main, :Lava)
-            try
-                Main.Lava.vk_flush!()
-                Main.Lava.flush_deferred_frees!()
-            catch; end
-        end
+        # Clean up GPU resources between scenes. Drop `scene` and its defining
+        # module FIRST: a scene's BLAS/TLAS/textures are the bulk of its VRAM
+        # (~3 GB for crown) and stay resident as long as anything references
+        # them, so without this the next scene's BVH is built while the previous
+        # scene is still on the card. That is what exhausts an 8 GB GPU partway
+        # through a sweep — measured, not guessed.
+        Base.invokelatest(close, integrator)
+        scene = nothing
+        m = nothing
+        release_scene_memory!(backend)
 
         if !isempty(timings)
             scene_result = OrderedDict(
@@ -870,6 +868,7 @@ function run_all_render_benchmarks(;
                     version, force)
                 all_results[name] = r
             else
+                release_backend_memory!(config.backend)
                 r = run_julia_benchmarks(;
                     backend=config.backend,
                     backend_name=name,
@@ -931,6 +930,70 @@ function should_skip(output_dir, prefix, version; force::Bool)
     println("  Skipping (exists): $(basename(path))")
     return true
 end
+
+"""
+    release_scene_memory!(backend)
+
+Hand a finished scene's GPU memory back to the driver.
+
+Mantle owns the allocator for the backends it has a device for (Lava, and the
+KA.CPU host device). `reclaim!` waits for the device and moves the finished
+scene's retired regions back to the pool's free list, so the next scene reuses
+those bytes instead of growing the pool.
+
+Deliberately NOT `Mantle.trim!`: that hands fully-unused blocks back to the
+driver, and the next scene then has to re-acquire them. Measured on an 8 GB
+RTX 3070, trimming between scenes turned a passing crown → bunny_cloud
+transition into `ERROR_OUT_OF_DEVICE_MEMORY`. Reuse is the point of a pool;
+trimming is for when you are done with the device, not between workloads.
+
+This replaces calls to `Lava.vk_flush!()` and `Lava.flush_deferred_frees!()`.
+Neither exists in a callable form any more now that the pool lives in Mantle —
+`vk_flush!` takes a context or queue, `flush_deferred_frees!` is gone entirely —
+and both were inside a bare `try/catch`, so the errors were swallowed and this
+cleanup had silently been doing nothing at all.
+
+Backends with their own allocator (AMDGPU, CUDA) have no Mantle pool; for them
+this is just the GC pass, and `_release_gpu_memory` handles the rest.
+"""
+function release_scene_memory!(backend)
+    GC.gc(true)
+    hasmethod(Hikari.mantle_device, Tuple{typeof(backend)}) || return nothing
+    dev = Hikari.mantle_device(backend)
+    Mantle.reclaim!(Mantle.pool(dev), dev; wait=true)
+    # And give the blocks back, which this deliberately did NOT do. The reasoning
+    # was that keeping them lets the next scene reuse them; measured across a
+    # sweep it does the opposite, because consecutive scenes want different
+    # shapes and sizes. After crown, `reclaim!` alone left 2.4 GB of Mantle
+    # blocks and 6.0 GB in CUDA.jl's pool resident, the driver reporting 490 MiB
+    # free — and the next scene died with "Out of GPU memory trying to allocate
+    # 64 MiB" at 98.75% usage.
+    #
+    # Re-allocating a few large blocks for the next scene costs milliseconds
+    # against a multi-second render, so the reuse was never worth much even when
+    # it did apply.
+    Mantle.trim!(Mantle.pool(dev), dev)
+    return nothing
+end
+
+"""
+    release_backend_memory!(backend)
+
+Hand the pool's unused blocks back to the driver before switching backends.
+
+The same thing `release_scene_memory!` does, kept as a separate name because the
+call sites mean different things by it — one is "this scene is finished", the
+other "this backend is finished".
+
+It used to be the stronger of the two: the scene version skipped `Mantle.trim!`
+so the next scene could reuse the blocks, and only a backend switch handed them
+back. That distinction is gone because the reuse did not pay for itself; see
+`release_scene_memory!`. The backend case is the one it was never in doubt for,
+since `lava_hw` and `lava_sw` share one Vulkan device and therefore one Mantle
+pool, and without a trim the second backend starts with all of the first's
+blocks resident.
+"""
+release_backend_memory!(backend) = release_scene_memory!(backend)
 
 """
     _release_gpu_memory()
