@@ -74,7 +74,7 @@ function build_rainbow_glow_medium(vc;
 
     σ_a = Array{Hikari.RGBSpectrum, 3}(undef, nx, ny, nz)
     σ_s = Array{Hikari.RGBSpectrum, 3}(undef, nx, ny, nz)
-    Le  = Array{Hikari.RGBSpectrum, 3}(undef, nx, ny, nz)
+    color = Array{Hikari.RGBSpectrum, 3}(undef, nx, ny, nz)
 
     @inbounds for i in eachindex(vc)
         d = Float32(vc[i])
@@ -115,7 +115,7 @@ function panel_rainbow_glow!(ax::LScene, dmesh, vc, cam;
     # still reads as the subject, bright enough that the dolphin itself is
     # visible through the residual smoke haze.
     dolphin = mesh!(ax, dmesh; material=Hikari.CoatedDiffuse(
-        reflectance=(0.30f0, 0.32f0, 0.38f0), roughness=0.05f0, eta=1.5f0))
+        reflectance=(0.30f0, 0.32f0, 0.38f0), roughness=0.05f0, ior = 1.5f0))
 
     medium = build_rainbow_glow_medium(vc;
         emission_scale, extinction_intensity, colormap_sym, colorrange)
@@ -124,7 +124,7 @@ function panel_rainbow_glow!(ax::LScene, dmesh, vc, cam;
         Vec3f(1f0, 1f0, 1f0),
         Vec3f(Float32(nx - 1), Float32(ny - 1), Float32(nz - 1))))
 
-    boundary = Hikari.Dielectric(index=1.0f0, roughness=0.0f0)
+    boundary = Hikari.Glass(ior = 1.0f0)
     vol = mesh!(ax, cube; material=Hikari.MediumInterface(
         boundary; inside=medium))
 
@@ -141,7 +141,7 @@ function update_rainbow_glow!(plots, vc;
         colorrange=(0.015f0, 0.13f0))
     new_medium = build_rainbow_glow_medium(vc;
         emission_scale, extinction_intensity, colormap_sym, colorrange)
-    boundary = Hikari.Dielectric(index=1.0f0, roughness=0.0f0)
+    boundary = Hikari.Glass(ior = 1.0f0)
     Makie.update!(plots.vol; material=Hikari.MediumInterface(
         boundary; inside=new_medium))
     return nothing

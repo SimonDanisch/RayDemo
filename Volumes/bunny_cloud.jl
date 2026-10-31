@@ -95,7 +95,7 @@ function create_scene(;
     ground_material = Hikari.CoatedDiffuse(
         reflectance = (0.4f0, 0.45f0, 0.35f0),
         roughness = 0f0,
-        eta = 1.5f0,
+        ior = 1.5f0,
         thickness = 0.01f0
     )
     ground_r = 1000f0

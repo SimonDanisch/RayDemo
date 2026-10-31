@@ -185,7 +185,7 @@ function panel_streamlines(dmesh, vfunc, bounds, cam, domain_size; spp=256, bcx=
         backgroundcolor=RGBf(0.03,0.05,0.14))
     cam3d!(s)
     mesh!(s, dmesh; material=Hikari.CoatedDiffuse(
-        reflectance=(0.30f0,0.35f0,0.45f0), roughness=0.02f0, eta=1.5f0))
+        reflectance=(0.30f0,0.35f0,0.45f0), roughness=0.02f0, ior = 1.5f0))
     streamplot!(s, vfunc, xm..xM, ym..yM, zm..zM;
         gridsize=(8,16,8), stepsize=0.35f0, maxsteps=1000, density=0.8,
         use_tubes=true, tube_radius=0.13f0, tube_n_sides=8,
@@ -215,7 +215,7 @@ function panel_blue_volume(dmesh, vfunc, vc, crop, bounds, cam, domain_size; spp
         backgroundcolor=RGBf(0.02,0.04,0.12))
     cam3d!(s)
     mesh!(s, dmesh; material=Hikari.CoatedDiffuse(
-        reflectance=(0.30f0,0.35f0,0.45f0), roughness=0.02f0, eta=1.5f0))
+        reflectance=(0.30f0,0.35f0,0.45f0), roughness=0.02f0, ior = 1.5f0))
     streamplot!(s, vfunc, xm..xM, wym..wyM, zm..zM;
         gridsize=(6,12,6), stepsize=0.4f0, maxsteps=800, density=0.6,
         use_tubes=true, tube_radius=0.09f0, tube_n_sides=6,
@@ -252,7 +252,7 @@ function panel_warm_hero(dmesh, vfunc, vc, crop, bounds, domain_size, bcx, bcy, 
         backgroundcolor=RGBf(0.012,0.02,0.05))
     cam3d!(s)
     mesh!(s, dmesh; material=Hikari.CoatedDiffuse(
-        reflectance=(0.25f0,0.30f0,0.40f0), roughness=0.02f0, eta=1.5f0))
+        reflectance=(0.25f0,0.30f0,0.40f0), roughness=0.02f0, ior = 1.5f0))
     streamplot!(s, vfunc, xm..xM, wym..wyM, zm..zM;
         gridsize=(6,12,6), stepsize=0.4f0, maxsteps=800, density=0.6,
         use_tubes=true, tube_radius=0.09f0, tube_n_sides=6,
@@ -396,7 +396,7 @@ function panel_pathlines_dye(dmesh, dye_r, dye_g, dye_b, dye_lo, dye_hi, bcx, bc
         backgroundcolor=RGBf(0.005,0.01,0.03))
     cam3d!(s)
     mesh!(s, dmesh; material=Hikari.CoatedDiffuse(
-        reflectance=(0.30f0,0.35f0,0.45f0), roughness=0.02f0, eta=1.5f0))
+        reflectance=(0.30f0,0.35f0,0.45f0), roughness=0.02f0, ior = 1.5f0))
 
     for (ch, col) in [(dye_r,(1.0,0.0,0.0)), (dye_g,(0.0,1.0,0.0)), (dye_b,(0.0,0.0,1.0))]
         volume!(s, dye_lo[1]..dye_hi[1], dye_lo[2]..dye_hi[2], dye_lo[3]..dye_hi[3], ch;

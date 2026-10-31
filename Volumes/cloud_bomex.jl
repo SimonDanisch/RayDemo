@@ -25,9 +25,7 @@ function create_scene(nvdb_path; resolution=(1280, 720))
     grid_extent = Vec3f(cloud_medium.bounds.p_max - cloud_medium.bounds.p_min)
 
     # Transparent boundary enclosing the medium
-    transparent = Hikari.Dielectric(
-        Kr=Hikari.RGBSpectrum(0f0), Kt=Hikari.RGBSpectrum(1f0), index=1.0f0
-    )
+    transparent = Hikari.Glass(ior = 1.0f0)
     volume_material = Hikari.MediumInterface(transparent; inside=cloud_medium, outside=nothing)
     mesh!(s, Rect3f(cloud_origin, grid_extent); material=volume_material)
 

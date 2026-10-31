@@ -45,7 +45,7 @@ function build_rainbow_glow_medium(vc;
     crange < 1f-10 && (crange = 1f0)
     σ_a = Array{Hikari.RGBSpectrum, 3}(undef, nx, ny, nz)
     σ_s = Array{Hikari.RGBSpectrum, 3}(undef, nx, ny, nz)
-    Le  = Array{Hikari.RGBSpectrum, 3}(undef, nx, ny, nz)
+    color = Array{Hikari.RGBSpectrum, 3}(undef, nx, ny, nz)
     @inbounds for i in eachindex(vc)
         d = Float32(vc[i])
         t = clamp((d - cmin) / crange, 0f0, 1f0)
@@ -68,14 +68,14 @@ function panel_rainbow_glow!(ax::LScene, dmesh, vc, cam;
         emission_scale=0.5f0, extinction_intensity=0.02f0,
         colormap_sym=:turbo, colorrange=(0.015f0, 0.13f0))
     dolphin = mesh!(ax, dmesh; material=Hikari.CoatedDiffuse(
-        reflectance=(0.30f0, 0.32f0, 0.38f0), roughness=0.05f0, eta=1.5f0))
+        reflectance=(0.30f0, 0.32f0, 0.38f0), roughness=0.05f0, ior = 1.5f0))
     medium = build_rainbow_glow_medium(vc;
         emission_scale, extinction_intensity, colormap_sym, colorrange)
     nx, ny, nz = size(vc)
     cube = GeometryBasics.normal_mesh(Rect3f(
         Vec3f(1f0, 1f0, 1f0),
         Vec3f(Float32(nx - 1), Float32(ny - 1), Float32(nz - 1))))
-    boundary = Hikari.Dielectric(index=1.0f0, roughness=0.0f0)
+    boundary = Hikari.Glass(ior = 1.0f0)
     vol = mesh!(ax, cube; material=Hikari.MediumInterface(boundary; inside=medium))
     set_panel_cam!(ax, cam)
     return (dolphin=dolphin, vol=vol)
@@ -86,7 +86,7 @@ function update_rainbow_glow!(plots, vc;
         colormap_sym=:turbo, colorrange=(0.015f0, 0.13f0))
     new_medium = build_rainbow_glow_medium(vc;
         emission_scale, extinction_intensity, colormap_sym, colorrange)
-    boundary = Hikari.Dielectric(index=1.0f0, roughness=0.0f0)
+    boundary = Hikari.Glass(ior = 1.0f0)
     Makie.update!(plots.vol; material=Hikari.MediumInterface(boundary; inside=new_medium))
     return nothing
 end

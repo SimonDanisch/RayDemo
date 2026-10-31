@@ -337,7 +337,7 @@ function panel_streamlines!(ax::LScene, dmesh, vfunc, bounds, cam, domain_size)
     ym = max(2f0, byr[1]-20f0); yM = min(Float32(sy-1), byr[2]+100f0)
     zm = max(2f0, bzr[1]-15f0); zM = min(Float32(sz-1), bzr[2]+15f0)
     dolphin = mesh!(ax, dmesh; material=Hikari.CoatedDiffuse(
-        reflectance=(0.30f0,0.35f0,0.45f0), roughness=0.02f0, eta=1.5f0))
+        reflectance=(0.30f0,0.35f0,0.45f0), roughness=0.02f0, ior = 1.5f0))
     # High-contrast velocity coloring: sqrt-stretch + explicit colorrange + turbo
     stream = streamplot!(ax, vfunc, xm..xM, ym..yM, zm..zM;
         gridsize=(14, 24, 14), stepsize=0.35f0, maxsteps=1000, density=1.2,
@@ -353,7 +353,7 @@ end
 function panel_blue_volume!(ax::LScene, dmesh, vc, cam)
     nx, ny, nz = size(vc)
     dolphin = mesh!(ax, dmesh; material=Hikari.CoatedDiffuse(
-        reflectance=(0.30f0,0.35f0,0.45f0), roughness=0.02f0, eta=1.5f0))
+        reflectance=(0.30f0,0.35f0,0.45f0), roughness=0.02f0, ior = 1.5f0))
     vol = volume!(ax, 1f0..Float32(nx), 1f0..Float32(ny), 1f0..Float32(nz), vc;
         colormap=[RGBA(0,0,0,0), RGBA(0,0,0,0), RGBA(0.01,0.02,0.08,0.001), RGBA(0.03,0.08,0.25,0.002),
                   RGBA(0.08,0.2,0.55,0.005), RGBA(0.15,0.38,0.8,0.01), RGBA(0.25,0.55,0.92,0.02),
@@ -367,7 +367,7 @@ end
 function panel_warm_hero!(ax::LScene, dmesh, vc, cam)
     nx, ny, nz = size(vc)
     dolphin = mesh!(ax, dmesh; material=Hikari.CoatedDiffuse(
-        reflectance=(0.25f0,0.30f0,0.40f0), roughness=0.02f0, eta=1.5f0))
+        reflectance=(0.25f0,0.30f0,0.40f0), roughness=0.02f0, ior = 1.5f0))
     vol = volume!(ax, 1f0..Float32(nx), 1f0..Float32(ny), 1f0..Float32(nz), vc;
         colormap=[RGBA(0,0,0,0), RGBA(0,0,0,0), RGBA(0.03,0,0.08,0.001), RGBA(0.15,0.01,0.3,0.003),
                   RGBA(0.45,0.04,0.15,0.007), RGBA(0.75,0.12,0.03,0.012), RGBA(0.95,0.28,0.04,0.025),
@@ -498,7 +498,7 @@ end
 
 function panel_pathlines_dye!(ax::LScene, dmesh, dye_r, dye_g, dye_b, dye_lo, dye_hi, cam)
     dolphin = mesh!(ax, dmesh; material=Hikari.CoatedDiffuse(
-        reflectance=(0.30f0,0.35f0,0.45f0), roughness=0.02f0, eta=1.5f0))
+        reflectance=(0.30f0,0.35f0,0.45f0), roughness=0.02f0, ior = 1.5f0))
 
     # Per-voxel medium: subtle water everywhere + soft cubic dye on top.
     # Cubic falloff keeps bright cores dim and fades tails to near-transparent -> soft plumes.
@@ -529,7 +529,7 @@ function panel_pathlines_dye!(ax::LScene, dmesh, dye_r, dye_g, dye_b, dye_lo, dy
     cube = GeometryBasics.normal_mesh(Rect3f(Vec3f(dye_lo...), Vec3f(dye_hi .- dye_lo)))
     # Water-IOR dielectric gives Fresnel reflections at grazing angles + subtle
     # refraction, so the cube reads as a tank of water. Mild roughness softens glints.
-    glass = Hikari.Dielectric(index=1.33f0, roughness=0.001f0)
+    glass = Hikari.Glass(roughness = 0.178, ior = 1.33f0)
     tank = mesh!(ax, cube; material=Hikari.MediumInterface(glass; inside=medium))
 
     set_panel_cam!(ax, cam)
@@ -657,7 +657,7 @@ Full MediumInterface (glass + medium) for the initial scene construction.
 """
 function build_dye_medium(dye_r, dye_g, dye_b, dye_lo, dye_hi)
     medium = build_dye_medium_only(dye_r, dye_g, dye_b, dye_lo, dye_hi)
-    glass = Hikari.Dielectric(index=1.33f0, roughness=0.001f0)
+    glass = Hikari.Glass(roughness = 0.178, ior = 1.33f0)
     return Hikari.MediumInterface(glass; inside=medium)
 end
 
