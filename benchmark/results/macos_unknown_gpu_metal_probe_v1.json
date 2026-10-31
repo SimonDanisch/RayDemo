@@ -1,0 +1,34 @@
+{
+    "metadata": {
+        "platform": "macos",
+        "gpu_name": "unknown_gpu",
+        "cpu_name": "m5",
+        "device_name": "unknown_gpu",
+        "backend_name": "metal_probe",
+        "version": "v1",
+        "renderer": "raymakie",
+        "hw_accel": false,
+        "n_warmup": 1,
+        "n_trials": 1,
+        "timestamp": "2026-08-29 02:07:17",
+        "julia_version": "1.12.7",
+        "cpu_threads": 4
+    },
+    "scenes": {
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                2.615373166
+            ],
+            "median": 2.6154,
+            "min": 2.6154,
+            "max": 2.6154
+        }
+    }
+}

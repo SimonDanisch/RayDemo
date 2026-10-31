@@ -37,16 +37,16 @@ function create_scene(; resolution=(2400, 1800))
     # --- Room ---
     # Floor
     floor_mat = Hikari.Diffuse(
-        Hikari.ConstTexture(Hikari.RGBSpectrum(0.15f0, 0.12f0, 0.1f0)),
-        Hikari.ConstTexture(20f0)
+        Kd = Hikari.ConstTexture(Hikari.RGBSpectrum(0.15f0, 0.12f0, 0.1f0)),
+        σ = Hikari.ConstTexture(20f0),
     )
     mesh!(scene, Rect3f(Vec3f(-5, -5, -0.01), Vec3f(10, 10, 0.01));
           color=RGBf(0.15, 0.12, 0.1), material=floor_mat)
 
     # Back wall
     wall_mat = Hikari.Diffuse(
-        Hikari.ConstTexture(Hikari.RGBSpectrum(0.2f0, 0.18f0, 0.17f0)),
-        Hikari.ConstTexture(10f0)
+        Kd = Hikari.ConstTexture(Hikari.RGBSpectrum(0.2f0, 0.18f0, 0.17f0)),
+        σ = Hikari.ConstTexture(10f0),
     )
     mesh!(scene, Rect3f(Vec3f(-5, 4.99, 0), Vec3f(10, 0.01, 5));
           color=RGBf(0.2, 0.18, 0.17), material=wall_mat)

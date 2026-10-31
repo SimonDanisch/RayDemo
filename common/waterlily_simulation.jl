@@ -2,7 +2,18 @@ using WaterLily
 using Printf, JLD2
 using BiotSavartBCs
 using WaterLily: dot, sgs!, inside, ω_mag
-using Lava
+using Mantle
+import KernelAbstractions as KA
+
+# The array type the simulation allocates in, derived from whichever GPU backend
+# this session loaded rather than named outright.
+#
+# This said `LavaArray`, which is a Vulkan type and — since the runtime moved
+# behind `MantleVulkanExt` — not even a resolvable name without a driver. The
+# `const PARAMS` below is evaluated at load, so on a Mac this file failed to
+# load at all and every Waterlily demo was skipped.
+simulation_memory() = typeof(KA.allocate(Mantle.defaultbackend(), Float32, 0)).name.wrapper
+
 const PARAMS = (
     # Grid parameters
     p=4,                      # Grid resolution exponent (m = 3 * 2^p)
@@ -16,7 +27,7 @@ const PARAMS = (
     stats_interval=0.1,      # Interval for statistics collection
     save_interval=0.5,       # Interval for saving checkpoints
     # Backend
-    mem=LavaArray,            # Array type (ROCArray, CuArray, Array)
+    mem=simulation_memory(), # Array type for the loaded backend (MtlArray, LavaArray, …)
     T=Float32,               # Floating point precision
     # Data directory
     datadir=joinpath(@__DIR__, "sim"),

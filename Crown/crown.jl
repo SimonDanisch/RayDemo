@@ -41,8 +41,8 @@ function render_scene(;
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    using Lava
     scene = create_scene()
-    screen = display(scene; backend=RayMakie, update=false, device=Lava.LavaBackend(),
+    # `DEVICE` from common.jl — naming a backend here made the script Vulkan-only.
+    screen = display(scene; backend=RayMakie, update=false, device=DEVICE,
         integrator=Hikari.VolPath(max_depth=8, samples=1, hw_accel=true))
 end

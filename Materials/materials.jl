@@ -222,8 +222,7 @@ function render_scene(;
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    using Lava
-    DEVICE = Lava.LavaBackend()
+    # `DEVICE` already comes from common.jl and follows the loaded backend.
     sensor = Hikari.PixelSensor(; iso=50, exposure_time=1.0, whitebalance=0)
     scene = create_scene()
     display(scene; sensor=sensor, integrator=Hikari.VolPath(; samples=1, max_depth=50, hw_accel=true))
