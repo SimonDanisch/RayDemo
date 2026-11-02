@@ -79,10 +79,7 @@ push_light!(ax.scene, sun_sky)
 mesh!(ax, bathy_points, gb_faces; color = terrain_colors)
 
 # Water: transparent dielectric (IOR 1.33, slight blue tint via transmittance)
-water_material = Hikari.Dielectric(
-    Kt = (0.7, 0.85, 0.95),
-    index = 1.33f0,
-    roughness = 0.000f0)
+water_material = Hikari.Glass(color = (0.7, 0.85, 0.95), ior = 1.33f0)
 
 # Top surface faces only (indices 1..n_water)
 top_face_mask = [water_faces[i,1] <= n_water && water_faces[i,2] <= n_water && water_faces[i,3] <= n_water

@@ -125,7 +125,7 @@ function Hikari.sample_point(
     σ_a = Hikari.uplift_rgb_unbounded(table, medium.σ_a, λ) * d
     σ_s = Hikari.uplift_rgb_unbounded(table, medium.σ_s, λ) * d
 
-    Le = if d > 0.005f0 && medium.emission_scale > 0f0
+    color = if d > 0.005f0 && medium.emission_scale > 0f0
         temp_factor = clamp(2.5f0 * medium.schwarzschild_radius / r, 0f0, 1f0)
         r_col = 1.0f0
         g_col = 0.3f0 + 0.7f0 * temp_factor
@@ -341,7 +341,7 @@ function create_scene(;
     )
 
     volume_material = Hikari.MediumInterface(
-        Hikari.ThinDielectric(eta=1.0f0),
+        Hikari.Glass(ior = 1.0f0),
         inside=spacetime,
         outside=nothing
     )
@@ -365,7 +365,7 @@ function create_scene(;
     # Event horizon (black sphere)
     mesh!(ax, Sphere(Point3f(0, 0, 0), Float32(schwarzschild_radius));
         color=RGBf(0, 0, 0), visible=false,
-        material=Hikari.Diffuse(Kd=Hikari.RGBSpectrum(0f0, 0f0, 0f0))
+        material=Hikari.Diffuse(color = Hikari.RGBSpectrum(0f0, 0f0, 0f0))
     )
 
     # Camera: edge-on view for classic black hole look

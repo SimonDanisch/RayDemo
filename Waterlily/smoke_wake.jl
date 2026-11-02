@@ -101,7 +101,7 @@ function build_scene(vorticity, params;
     sphere_material = Hikari.CoatedDiffuse(
         reflectance=(0.07f0, 0.06f0, 0.01f0),
         roughness=0.1f0,
-        eta=1.5f0,
+        ior = 1.5f0,
     )
     mesh!(ax, sphere_mesh; color=RGBf(0.07, 0.06, 0.01), material=sphere_material)
 
@@ -118,7 +118,7 @@ function build_scene(vorticity, params;
     ground_material = Hikari.CoatedDiffuse(
         reflectance=(0.1f0, 0.1f0, 0.12f0),
         roughness=0.1f0,
-        eta=1.5f0,
+        ior = 1.5f0,
     )
     mesh!(ax, ground_mesh; color=RGBf(1, 0.8, 0.3), material=ground_material)
 

@@ -99,7 +99,7 @@ function create_trace_scene(lv_meshes; glass_meshes=nothing, resolution=(800, 10
             a < 0.1 && continue
             mat_idx += 1
             color_tex = Hikari.ConstTexture(RayMakie.to_spectrum(RGB(r, g, b)))
-            mat = RayMakie.merge_color_with_material(color_tex, Hikari.Dielectric())
+            mat = RayMakie.merge_color_with_material(color_tex, Hikari.Glass())
             add_group!(meshes, mat, "glass_$mat_idx")
         end
     end

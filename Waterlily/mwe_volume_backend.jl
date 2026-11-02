@@ -40,7 +40,7 @@ function build_scene()
     # placeholder body (single sphere) so the scene has a non-volume surface
     mesh!(s, Sphere(Point3f(cx, cy-40, cz), 8f0);
         material=Hikari.CoatedDiffuse(reflectance=(0.30f0,0.35f0,0.45f0),
-                                      roughness=0.02f0, eta=1.5f0))
+                                      roughness=0.02f0, ior = 1.5f0))
 
     volume!(s, 1f0..Float32(nx), 1f0..Float32(ny), 1f0..Float32(nz), vc;
         colormap=[RGBA(0,0,0,0),              RGBA(0,0,0,0),

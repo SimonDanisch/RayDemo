@@ -1,0 +1,23 @@
+# MWE D — same gold sphere, but roughness from an IMAGEMAP (as crown's gold
+# actually does) instead of a float. Lives in Crown/ so the texture path resolves.
+Film "rgb"
+    "integer xresolution" [ 400 ]
+    "integer yresolution" [ 400 ]
+Sampler "halton"
+LookAt 0 -6 0   0 0 0   0 0 1
+Camera "perspective" "float fov" [ 30 ]
+Integrator "volpath" "integer maxdepth" [ 50 ]
+WorldBegin
+LightSource "infinite" "rgb L" [ 1 1 1 ] "float scale" [ 1 ]
+Texture "rough-tex" "float" "imagemap"
+    "string filename" [ "textures/mitra/right_front_spec.png" ]
+Texture "rough-sc" "float" "scale"
+    "float scale" [ 0.1 ]
+    "texture tex" [ "rough-tex" ]
+AttributeBegin
+Material "conductor"
+    "spectrum eta" [ "metal-Au-eta" ]
+    "spectrum k" [ "metal-Au-k" ]
+    "texture roughness" [ "rough-sc" ]
+Shape "sphere" "float radius" [ 1 ]
+AttributeEnd

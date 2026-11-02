@@ -63,12 +63,7 @@ end
 
 # Water material - physically correct dielectric surface (Fresnel handles reflection split)
 # Kr/Kt = 1: no surface absorption. Water's blue tint is volumetric, not surface.
-water_material = Hikari.Dielectric(
-    Kr=Hikari.RGBSpectrum(1f0, 1f0, 1f0),
-    Kt=Hikari.RGBSpectrum(1f0, 1f0, 1f0),
-    roughness=0.01f0,
-    index=1.33f0
-)
+water_material = Hikari.Glass(color = Hikari.RGBSpectrum(1f0, 1f0, 1f0), roughness = 0.316, ior = 1.33f0)
 
 # Ball material - red matte
 ball_material = Hikari.Gold(; roughness=0.01f0)

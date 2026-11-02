@@ -60,7 +60,7 @@ function build_demo(; n_grains::Int = 1_000_000,
     #    push!(scene, material) returns a UInt32 index into scene.media_interfaces.
     #    This mi_idx is passed to meshscatter_create_gpu! so every instance has a
     #    valid material and path-traced hits produce non-zero radiance.
-    grain_material = Hikari.Diffuse(Kd=Hikari.RGBSpectrum(0.8f0, 0.7f0, 0.55f0))
+    grain_material = Hikari.Diffuse(color = Hikari.RGBSpectrum(0.8f0, 0.7f0, 0.55f0))
     mi_idx = push!(scene, grain_material)
 
     # 4. Cube marker mesh: half-extents = 1 so scale=radius gives actual radius.
