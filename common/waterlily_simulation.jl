@@ -3,6 +3,11 @@ using Printf, JLD2
 using BiotSavartBCs
 using WaterLily: dot, sgs!, inside, ω_mag
 using Mantle
+import KernelAbstractions as KA
+
+# Derive the simulation array type from the selected GPU backend.
+simulation_memory() = typeof(KA.allocate(Mantle.defaultbackend(), Float32, 0)).name.wrapper
+
 const PARAMS = (
     # Grid parameters
     p=4,                      # Grid resolution exponent (m = 3 * 2^p)
@@ -16,7 +21,7 @@ const PARAMS = (
     stats_interval=0.1,      # Interval for statistics collection
     save_interval=0.5,       # Interval for saving checkpoints
     # Backend
-    mem=LavaArray,            # Array type (ROCArray, CuArray, Array)
+    mem=simulation_memory(), # Array type for the selected backend
     T=Float32,               # Floating point precision
     # Data directory
     datadir=joinpath(@__DIR__, "sim"),

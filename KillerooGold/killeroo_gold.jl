@@ -43,6 +43,6 @@ end
 if abspath(PROGRAM_FILE) == @__FILE__
     using Mantle
     scene = create_scene()
-    screen = RayMakie.vulkan_viewer(scene;
-        integrator=Hikari.VolPath(max_depth=8, samples=64, hw_accel=true))
+    screen = display(scene; backend=RayMakie, update=false, device=DEVICE,
+        max_depth=8, samples=64, hw_accel=true)
 end

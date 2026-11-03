@@ -13,7 +13,7 @@
 #   run_pbrt_benchmarks(pbrt_mode="cpu")    # or "gpu" for OptiX
 
 using JSON3, Dates, OrderedCollections
-using RayMakie, Hikari, Makie
+using RayMakie, Hikari, Makie, Mantle
 
 const RAYDEMO_DIR = joinpath(@__DIR__, "..")
 const BENCHMARK_RESULTS_DIR = joinpath(@__DIR__, "results")
@@ -592,11 +592,15 @@ function run_julia_benchmarks(;
             end
         end
 
-        # Clean up GPU resources between scenes: collect, and wait for
-        # everything still in flight so the next scene starts on an idle
-        # device. (The VolPath is the scene's, RayMakie's, and goes with it.)
-        GC.gc(true)
-        Base.invokelatest(getfield(Main, :Mantle).waitidle, backend)
+        # The screen owns the tracer now. Close it before dropping the scene,
+        # then return retired allocations before the next scene or backend.
+        screen = Base.invokelatest(Makie.getscreen, scene, RayMakie)
+        screen === nothing || Base.invokelatest(close, screen)
+        screen = nothing
+        scene = nothing
+        create_scene = nothing
+        m = nothing
+        release_scene_memory!(backend)
 
         if !isempty(timings)
             scene_result = OrderedDict(
@@ -906,6 +910,7 @@ function run_all_render_benchmarks(;
                     version, force)
                 all_results[name] = r
             else
+                release_scene_memory!(config.backend)
                 r = run_julia_benchmarks(;
                     backend=config.backend,
                     backend_name=name,
@@ -966,6 +971,22 @@ function should_skip(output_dir, prefix, version; force::Bool)
     end
     println("  Skipping (exists): $(basename(path))")
     return true
+end
+
+"""
+    release_scene_memory!(backend)
+
+Collect dropped scene resources, wait for the device, and return unused pool
+blocks to the driver before rendering another scene or switching backends.
+"""
+function release_scene_memory!(backend)
+    GC.gc(true)
+    hasmethod(Hikari.mantle_device, Tuple{typeof(backend)}) || return nothing
+    dev = Hikari.mantle_device(backend)
+    Mantle.waitidle(dev)
+    Mantle.reclaim!(Mantle.pool(dev), dev; wait=true)
+    Mantle.trim!(Mantle.pool(dev), dev)
+    return nothing
 end
 
 """
