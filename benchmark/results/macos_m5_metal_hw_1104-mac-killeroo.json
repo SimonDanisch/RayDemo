@@ -1,0 +1,36 @@
+{
+    "metadata": {
+        "platform": "macos",
+        "gpu_name": "m5",
+        "cpu_name": "m5",
+        "device_name": "m5",
+        "backend_name": "metal_hw",
+        "version": "1104-mac-killeroo",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-11-04 13:31:11",
+        "julia_version": "1.12.7",
+        "cpu_threads": 4
+    },
+    "scenes": {
+        "killeroo_gold": {
+            "resolution": [
+                1368,
+                1026
+            ],
+            "samples": 32,
+            "max_depth": 5,
+            "hw_accel": true,
+            "timings": [
+                3.419077291,
+                3.380686708,
+                3.38122925
+            ],
+            "median": 3.3812,
+            "min": 3.3807,
+            "max": 3.4191
+        }
+    }
+}

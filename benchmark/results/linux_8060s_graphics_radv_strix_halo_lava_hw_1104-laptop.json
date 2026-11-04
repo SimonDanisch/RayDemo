@@ -1,0 +1,73 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "8060s_graphics_radv_strix_halo",
+        "backend_name": "lava_hw",
+        "version": "1104-laptop",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-11-04 13:13:42",
+        "julia_version": "1.12.7",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "crown": {
+            "resolution": [
+                1000,
+                1400
+            ],
+            "samples": 16,
+            "max_depth": 100,
+            "hw_accel": true,
+            "timings": [
+                3.737867688,
+                3.838509795,
+                3.66721333
+            ],
+            "median": 3.7379,
+            "min": 3.6672,
+            "max": 3.8385
+        },
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                4.124261102,
+                5.14250831,
+                4.13098515
+            ],
+            "median": 4.131,
+            "min": 4.1243,
+            "max": 5.1425
+        },
+        "killeroo_gold": {
+            "error": "ArgumentError: pbrt: conductor's \"eta\" names \"spds/Au.eta.spd\", which is not an index of refraction pbrt knows"
+        },
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                0.797522831,
+                0.770460136,
+                0.772187802
+            ],
+            "median": 0.7722,
+            "min": 0.7705,
+            "max": 0.7975
+        }
+    }
+}

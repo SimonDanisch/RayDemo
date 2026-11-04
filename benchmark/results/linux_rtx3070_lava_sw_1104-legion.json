@@ -1,0 +1,73 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "rtx3070",
+        "cpu_name": "5800h_with_radeon_graphics",
+        "device_name": "rtx3070",
+        "backend_name": "lava_sw",
+        "version": "1104-legion",
+        "renderer": "raymakie",
+        "hw_accel": false,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-11-04 13:47:57",
+        "julia_version": "1.12.7",
+        "cpu_threads": 16
+    },
+    "scenes": {
+        "crown": {
+            "resolution": [
+                1000,
+                1400
+            ],
+            "samples": 16,
+            "max_depth": 100,
+            "hw_accel": false,
+            "timings": [
+                13.072354995,
+                13.024554176,
+                13.283553625
+            ],
+            "median": 13.0724,
+            "min": 13.0246,
+            "max": 13.2836
+        },
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                6.072908714,
+                5.822716775,
+                5.669461773
+            ],
+            "median": 5.8227,
+            "min": 5.6695,
+            "max": 6.0729
+        },
+        "killeroo_gold": {
+            "error": "ArgumentError: pbrt: conductor's \"eta\" names \"spds/Au.eta.spd\", which is not an index of refraction pbrt knows"
+        },
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": false,
+            "timings": [
+                2.101085764,
+                1.837477778,
+                1.844330153
+            ],
+            "median": 1.8443,
+            "min": 1.8375,
+            "max": 2.1011
+        }
+    }
+}

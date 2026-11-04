@@ -1,0 +1,73 @@
+{
+    "metadata": {
+        "platform": "macos",
+        "gpu_name": "m5",
+        "cpu_name": "m5",
+        "device_name": "m5",
+        "backend_name": "metal_hw",
+        "version": "1104-mac",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-11-04 13:13:45",
+        "julia_version": "1.12.7",
+        "cpu_threads": 4
+    },
+    "scenes": {
+        "crown": {
+            "resolution": [
+                1000,
+                1400
+            ],
+            "samples": 16,
+            "max_depth": 100,
+            "hw_accel": true,
+            "timings": [
+                7.7997175,
+                7.762086041,
+                7.770115084
+            ],
+            "median": 7.7701,
+            "min": 7.7621,
+            "max": 7.7997
+        },
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                10.806008792,
+                11.192715792,
+                10.823875916
+            ],
+            "median": 10.8239,
+            "min": 10.806,
+            "max": 11.1927
+        },
+        "killeroo_gold": {
+            "error": "ArgumentError: pbrt: conductor's \"eta\" names \"spds/Au.eta.spd\", which is not an index of refraction pbrt knows"
+        },
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                1.80180825,
+                1.804804583,
+                1.804446042
+            ],
+            "median": 1.8044,
+            "min": 1.8018,
+            "max": 1.8048
+        }
+    }
+}

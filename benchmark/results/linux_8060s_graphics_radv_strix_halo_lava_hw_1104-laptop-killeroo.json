@@ -1,0 +1,36 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "8060s_graphics_radv_strix_halo",
+        "cpu_name": "amd_ryzen_ai_max_pro_395_w_radeon_8060s",
+        "device_name": "8060s_graphics_radv_strix_halo",
+        "backend_name": "lava_hw",
+        "version": "1104-laptop-killeroo",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-11-04 14:02:18",
+        "julia_version": "1.12.7",
+        "cpu_threads": 32
+    },
+    "scenes": {
+        "killeroo_gold": {
+            "resolution": [
+                1368,
+                1026
+            ],
+            "samples": 32,
+            "max_depth": 5,
+            "hw_accel": true,
+            "timings": [
+                1.375051041,
+                1.265159171,
+                1.278671753
+            ],
+            "median": 1.2787,
+            "min": 1.2652,
+            "max": 1.3751
+        }
+    }
+}

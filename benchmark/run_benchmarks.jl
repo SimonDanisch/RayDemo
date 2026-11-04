@@ -339,6 +339,9 @@ function device_name_for_backend(backend_name::String, gpu_name::String, cpu_nam
     return gpu_name
 end
 
+"The results files' name for what Mantle renders on: `lava` for a `LavaDevice`, `metal` for a `MetalDevice`."
+backendlabel(dev) = replace(lowercase(string(nameof(typeof(dev)))), "device" => "")
+
 """
 Detect available backends. Returns list of (name, config) pairs.
 
@@ -360,14 +363,11 @@ function detect_backends()
         # HW RT first: its compiled kernels are shared with SW RT, avoiding
         # cold-start compilation of large workqueue kernels that can hang
         # AMD's Windows shader compiler.
-        #
-        # `supports_rt_pipeline(backend)` and not `ctx.rt_pipeline_properties`:
-        # the predicate is what Mantle offers for this, and the field it used to
-        # read is one backend's.
-        if Mantle.supports_rt_pipeline(backend)
-            push!(backends, "lava_hw" => (; backend, hw_accel=true))
+        label = backendlabel(dev)
+        if Mantle.supports_hwtlas(backend)
+            push!(backends, label * "_hw" => (; backend, hw_accel=true))
         end
-        push!(backends, "lava_sw" => (; backend, hw_accel=false))
+        push!(backends, label * "_sw" => (; backend, hw_accel=false))
         @info "Detected: GPU via Mantle" device=Mantle.devicename(dev)
     end
 
