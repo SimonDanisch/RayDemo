@@ -47,22 +47,13 @@ function create_scene(; resolution=(1200, 900))
     # Bump/displacement height field — mirrors Crown's engraved mitra materials,
     # which set pbrt-v4 "texture displacement" on conductor / coateddiffuse /
     # dielectric. One procedural height texture drives all three materials below.
-    #
-    # Only two of the three actually show it: Hikari applies the perturbed
-    # shading frame in the MICROFACET branch only, so a perfectly specular
-    # material ignores its height field entirely. Measured on this GPU, with the
-    # height field attached vs not: textured_gold (rough conductor) and
-    # coated_blue (roughness 0.05) differ by 14% / 7% RMSE, while `glass`
-    # (Dielectric, roughness 0) is BIT-IDENTICAL — as are Mirror, ThinDielectric
-    # and a roughness-0 Conductor, even at 20x the bump amplitude. The height
-    # field on `glass` is inert; it is kept so the scene still mirrors Crown's
-    # saphire, and so this stops being a silent no-op if Hikari ever moves the
-    # perturbation ahead of the smooth/rough split.
     bump_tex = Hikari.Texture(make_perlin_texture(128; scale=12.0, bias=0.5, contrast=1.0))
 
     # --- Glass and transparent materials (front row) ---
-    # Crown saphire: glass bumped by a height texture.
-    glass = Hikari.Glass(ior = 1.5, normal = Hikari.TextureNodes.bump(Hikari.TextureNodes.image_texture(bump_tex)))
+    # Crown saphire: glass bumped by a height texture. pbrt's displacement is a
+    # height in scene units, Blender's Bump node scales it by `distance`
+    # (0.001 by default, which leaves no visible bump).
+    glass = Hikari.Glass(ior = 1.5, normal = Hikari.TextureNodes.bump(Hikari.TextureNodes.image_texture(bump_tex); distance = 1))
     thin_glass = Hikari.Principled(base_color = (1, 1, 1), transmission_weight = 1, roughness = 0, ior = 1.5, thin_wall = true)
     glass_tint_tex = make_perlin_rgb_texture(64; scale=3.0, base_color=(0.95, 0.98, 1.0), variation=0.08)
     textured_glass = Hikari.Glass(color = Hikari.Texture(glass_tint_tex), ior = 1.5)
