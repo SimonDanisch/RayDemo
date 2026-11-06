@@ -125,7 +125,7 @@ function Hikari.sample_point(
     σ_a = Hikari.uplift_rgb_unbounded(table, medium.σ_a, λ) * d
     σ_s = Hikari.uplift_rgb_unbounded(table, medium.σ_s, λ) * d
 
-    color = if d > 0.005f0 && medium.emission_scale > 0f0
+    Le = if d > 0.005f0 && medium.emission_scale > 0f0
         temp_factor = clamp(2.5f0 * medium.schwarzschild_radius / r, 0f0, 1f0)
         r_col = 1.0f0
         g_col = 0.3f0 + 0.7f0 * temp_factor
@@ -355,16 +355,15 @@ function create_scene(;
     )
     cam3d!(ax)
 
-    # Medium boundary sphere
+    # Medium boundary sphere. No `color`: RayMakie merges a plot colour into the
+    # glass, and a black one absorbs every ray that enters the medium.
     mesh!(ax, Sphere(Point3f(0, 0, 0), Float32(boundary_radius));
-        color=:black, visible=false,
         material=volume_material,
-        transparency=true
     )
 
     # Event horizon (black sphere)
     mesh!(ax, Sphere(Point3f(0, 0, 0), Float32(schwarzschild_radius));
-        color=RGBf(0, 0, 0), visible=false,
+        color=RGBf(0, 0, 0),
         material=Hikari.Diffuse(color = Hikari.RGBSpectrum(0f0, 0f0, 0f0))
     )
 
@@ -405,8 +404,7 @@ function render_interactive(;
     resolution=(800, 450),
 )
     ax = create_scene(resolution=resolution)
-    RayMakie.interactive_window(ax; device=device, integrator=Hikari.VolPath(samples=1, max_depth=100))
-    display(ax; backend=GLMakie, update=false)
+    display(ax; backend=RayMakie, update=false, device=device, samples=1, max_depth=100)
 end
 
 # render_scene()
