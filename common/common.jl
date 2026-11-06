@@ -1,5 +1,5 @@
 using Mantle
-using GLMakie, RayMakie, Hikari
+using Makie, RayMakie, Hikari
 using FileIO, ImageShow
 
 # The GPU every scene script reads.
