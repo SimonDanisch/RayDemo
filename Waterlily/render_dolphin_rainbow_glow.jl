@@ -74,7 +74,7 @@ function build_rainbow_glow_medium(vc;
 
     σ_a = Array{Hikari.RGBSpectrum, 3}(undef, nx, ny, nz)
     σ_s = Array{Hikari.RGBSpectrum, 3}(undef, nx, ny, nz)
-    color = Array{Hikari.RGBSpectrum, 3}(undef, nx, ny, nz)
+    Le  = Array{Hikari.RGBSpectrum, 3}(undef, nx, ny, nz)
 
     @inbounds for i in eachindex(vc)
         d = Float32(vc[i])
