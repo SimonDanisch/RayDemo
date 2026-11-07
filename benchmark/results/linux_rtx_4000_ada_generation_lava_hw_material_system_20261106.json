@@ -1,0 +1,90 @@
+{
+    "metadata": {
+        "platform": "linux",
+        "gpu_name": "rtx_4000_ada_generation",
+        "cpu_name": "7900x",
+        "device_name": "rtx_4000_ada_generation",
+        "backend_name": "lava_hw",
+        "version": "material_system_20261106",
+        "renderer": "raymakie",
+        "hw_accel": true,
+        "n_warmup": 1,
+        "n_trials": 3,
+        "timestamp": "2026-11-06 12:04:35",
+        "julia_version": "1.12.7",
+        "cpu_threads": 24
+    },
+    "scenes": {
+        "crown": {
+            "resolution": [
+                1000,
+                1400
+            ],
+            "samples": 16,
+            "max_depth": 100,
+            "hw_accel": true,
+            "timings": [
+                2.779587053,
+                2.799457425,
+                2.954252851
+            ],
+            "median": 2.7995,
+            "min": 2.7796,
+            "max": 2.9543
+        },
+        "bunny_cloud": {
+            "resolution": [
+                1920,
+                1080
+            ],
+            "samples": 8,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                13.04322743,
+                3.953831212,
+                3.246895092
+            ],
+            "median": 3.9538,
+            "min": 3.2469,
+            "max": 13.0432
+        },
+        "killeroo_gold": {
+            "resolution": [
+                1368,
+                1026
+            ],
+            "samples": 32,
+            "max_depth": 5,
+            "hw_accel": true,
+            "timings": [
+                1.0710592,
+                1.058569588,
+                1.057599748
+            ],
+            "median": 1.0586,
+            "min": 1.0576,
+            "max": 1.0711
+        },
+        "materials": {
+            "resolution": [
+                1200,
+                900
+            ],
+            "samples": 10,
+            "max_depth": 50,
+            "hw_accel": true,
+            "timings": [
+                0.992875073,
+                0.965317951,
+                0.963140656
+            ],
+            "median": 0.9653,
+            "min": 0.9631,
+            "max": 0.9929
+        },
+        "black_hole": {
+            "error": "UndefVarError: `anonymous` not defined in `Main`\nSuggestion: check for spelling errors or missing imports."
+        }
+    }
+}
