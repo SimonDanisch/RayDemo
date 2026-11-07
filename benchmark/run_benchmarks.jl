@@ -452,9 +452,126 @@ end
 # =============================================================================
 
 """
+    bench_julia_scene(scene_name, cfg; backend, backend_name, hw_accel, n_warmup, n_trials, output_dir)
+
+One scene: load it, warm up, time the trials, save the warmup's render and close the
+screen. Returns the scene's result, or `nothing` for a script without `create_scene`.
+
+A function of its own so nothing of the scene is reachable once it returns. Its locals
+used to live in `run_julia_benchmarks`' frame, where a stale slot kept crown alive past
+`release_scene_memory!`; a later full collection retired its pool blocks, and freeing
+them landed in bunny_cloud's second trial (+0.24 s on the Ada, +0.85 s on the 8060S).
+"""
+function bench_julia_scene(scene_name, cfg; backend, backend_name, hw_accel, n_warmup, n_trials, output_dir)
+    # Load scene script
+    m = Module()
+    Core.eval(m, :(include(path) = Base.include($m, path)))
+    try
+        Base.include(m, cfg.script)
+    catch e
+        @warn "Failed to load $scene_name" exception=(e, catch_backtrace())
+        return OrderedDict("error" => sprint(showerror, e))
+    end
+
+    Base.invokelatest(isdefined, m, :create_scene) || (@warn "$scene_name: no create_scene()"; return nothing)
+    # The script was just included, so its bindings are newer than this
+    # function's world: reach them through `invokelatest`, the binding
+    # access included (Julia 1.12 warns on the bare `m.create_scene`).
+    create_scene = Base.invokelatest(getglobal, m, :create_scene)
+
+    # Create scene once
+    print("  Creating scene... ")
+    local scene
+    try
+        scene = Base.invokelatest(create_scene; resolution=cfg.resolution)
+    catch e
+        @warn "create_scene failed" exception=(e, catch_backtrace())
+        return OrderedDict("error" => sprint(showerror, e))
+    end
+    println("done.")
+
+    sensor = Base.invokelatest(Hikari.PixelSensor; cfg.sensor_kwargs...)
+    # RayMakie takes the path tracer's settings directly (it rejects
+    # `integrator` since d734602f5): each scene builds its own VolPath.
+    rt = (; samples=cfg.samples, max_depth=cfg.max_depth, hw_accel=hw_accel, sensor=sensor)
+    Base.invokelatest(RayMakie.activate!; device=backend, cfg.colorbuffer_kwargs...)
+
+    # Warmup
+    println("  Warmup ($n_warmup)...")
+    local img
+    for i in 1:n_warmup
+        try
+            img = Base.invokelatest(Makie.colorbuffer, scene;
+                backend=RayMakie, rt...)
+        catch e
+            @warn "  Warmup $i failed" exception=(e, catch_backtrace())
+        end
+        GC.gc(false)
+    end
+
+    # Save render to results/renders/.  A failure here means the reference
+    # image for this scene is missing, so it has to be reported — silently
+    # swallowing it leaves the run looking clean with no image to check.
+    try
+        renders_dir = joinpath(output_dir, "renders")
+        mkpath(renders_dir)
+        out_path = joinpath(renders_dir, "$(scene_name)_$(backend_name).png")
+        Base.invokelatest(FileIO.save, out_path, img)
+    catch e
+        @warn "  Saving render for $scene_name failed" exception=(e, catch_backtrace())
+    end
+
+    # Timed trials
+    println("  Benchmarking ($n_trials trials)...")
+    timings = Float64[]
+    bench_error = nothing
+    for trial in 1:n_trials
+        GC.gc(true)
+        try
+            t = @elapsed begin
+                Base.invokelatest(Makie.colorbuffer, scene;
+                    backend=RayMakie, rt...)
+            end
+            push!(timings, t)
+            println("    Trial $trial: $(round(t, digits=3))s")
+        catch e
+            bench_error = sprint(showerror, e)
+            @warn "  Trial $trial failed" exception=(e, catch_backtrace())
+            break
+        end
+    end
+
+    # The screen owns the tracer now. Close it before the scene is dropped,
+    # which happens when this returns.
+    screen = Base.invokelatest(Makie.getscreen, scene, RayMakie)
+    screen === nothing || Base.invokelatest(close, screen)
+
+    if !isempty(timings)
+        scene_result = OrderedDict(
+            "resolution" => [cfg.resolution...],
+            "samples" => cfg.samples,
+            "max_depth" => cfg.max_depth,
+            "hw_accel" => hw_accel,
+            "timings" => timings,
+            "median" => round(_median(sort(timings)), digits=4),
+            "min" => round(minimum(timings), digits=4),
+            "max" => round(maximum(timings), digits=4),
+        )
+        println("  => median=$(scene_result["median"])s  min=$(scene_result["min"])s")
+        return scene_result
+    end
+    println("  => FAILED")
+    return OrderedDict("error" => something(bench_error, "no timings"))
+end
+
+"""
     run_julia_benchmarks(; backend, backend_name, hw_accel, scenes, n_warmup, n_trials)
 
 Benchmark RayMakie render time (colorbuffer only, excluding scene creation).
+
+Two warmup renders by default: the first is almost all compilation, so the GPU sits at
+its idle clocks through it, and a trial right after it paid the ramp back up (Ada
+killeroo_gold 0.95-1.1 s against 0.785 s at full clocks).
 """
 function run_julia_benchmarks(;
     backend,
@@ -464,7 +581,7 @@ function run_julia_benchmarks(;
     gpu_name::String = detect_gpu_name(),
     cpu_name::String = detect_cpu_name(),
     scenes::Vector{String} = collect(keys(BENCHMARK_SCENES)),
-    n_warmup::Int = 1,
+    n_warmup::Int = 2,
     n_trials::Int = 3,
     version::String = "v1",
     force::Bool = false,
@@ -512,113 +629,10 @@ function run_julia_benchmarks(;
         println("  $(cfg.resolution) $(cfg.samples)spp max_depth=$(cfg.max_depth)")
         println("="^60)
 
-        # Load scene script
-        m = Module()
-        Core.eval(m, :(include(path) = Base.include($m, path)))
-        try
-            Base.include(m, cfg.script)
-        catch e
-            @warn "Failed to load $scene_name" exception=(e, catch_backtrace())
-            results["scenes"][scene_name] = OrderedDict("error" => sprint(showerror, e))
-            continue
-        end
-
-        Base.invokelatest(isdefined, m, :create_scene) || (@warn "$scene_name: no create_scene()"; continue)
-        # The script was just included, so its bindings are newer than this
-        # function's world: reach them through `invokelatest`, the binding
-        # access included (Julia 1.12 warns on the bare `m.create_scene`).
-        create_scene = Base.invokelatest(getglobal, m, :create_scene)
-
-        # Create scene once
-        print("  Creating scene... ")
-        local scene
-        try
-            scene = Base.invokelatest(create_scene; resolution=cfg.resolution)
-        catch e
-            @warn "create_scene failed" exception=(e, catch_backtrace())
-            results["scenes"][scene_name] = OrderedDict("error" => sprint(showerror, e))
-            continue
-        end
-        println("done.")
-
-        sensor = Base.invokelatest(Hikari.PixelSensor; cfg.sensor_kwargs...)
-        # RayMakie takes the path tracer's settings directly (it rejects
-        # `integrator` since d734602f5): each scene builds its own VolPath.
-        rt = (; samples=cfg.samples, max_depth=cfg.max_depth, hw_accel=hw_accel, sensor=sensor)
-        Base.invokelatest(RayMakie.activate!; device=backend, cfg.colorbuffer_kwargs...)
-
-        # Warmup
-        println("  Warmup ($n_warmup)...")
-        local img
-        for i in 1:n_warmup
-            try
-                img = Base.invokelatest(Makie.colorbuffer, scene;
-                    backend=RayMakie, rt...)
-            catch e
-                @warn "  Warmup $i failed" exception=(e, catch_backtrace())
-            end
-            GC.gc(false)
-        end
-
-        # Save render to results/renders/.  A failure here means the reference
-        # image for this scene is missing, so it has to be reported — silently
-        # swallowing it leaves the run looking clean with no image to check.
-        try
-            renders_dir = joinpath(output_dir, "renders")
-            mkpath(renders_dir)
-            out_path = joinpath(renders_dir, "$(scene_name)_$(backend_name).png")
-            Base.invokelatest(FileIO.save, out_path, img)
-        catch e
-            @warn "  Saving render for $scene_name failed" exception=(e, catch_backtrace())
-        end
-
-        # Timed trials
-        println("  Benchmarking ($n_trials trials)...")
-        timings = Float64[]
-        bench_error = nothing
-        for trial in 1:n_trials
-            GC.gc(true)
-            try
-                t = @elapsed begin
-                    Base.invokelatest(Makie.colorbuffer, scene;
-                        backend=RayMakie, rt...)
-                end
-                push!(timings, t)
-                println("    Trial $trial: $(round(t, digits=3))s")
-            catch e
-                bench_error = sprint(showerror, e)
-                @warn "  Trial $trial failed" exception=(e, catch_backtrace())
-                break
-            end
-        end
-
-        # The screen owns the tracer now. Close it before dropping the scene,
-        # then return retired allocations before the next scene or backend.
-        screen = Base.invokelatest(Makie.getscreen, scene, RayMakie)
-        screen === nothing || Base.invokelatest(close, screen)
-        screen = nothing
-        scene = nothing
-        create_scene = nothing
-        m = nothing
+        result = bench_julia_scene(scene_name, cfg; backend, backend_name, hw_accel, n_warmup, n_trials, output_dir)
+        # Return retired allocations before the next scene or backend.
         release_scene_memory!(backend)
-
-        if !isempty(timings)
-            scene_result = OrderedDict(
-                "resolution" => [cfg.resolution...],
-                "samples" => cfg.samples,
-                "max_depth" => cfg.max_depth,
-                "hw_accel" => hw_accel,
-                "timings" => timings,
-                "median" => round(_median(sort(timings)), digits=4),
-                "min" => round(minimum(timings), digits=4),
-                "max" => round(maximum(timings), digits=4),
-            )
-            results["scenes"][scene_name] = scene_result
-            println("  => median=$(scene_result["median"])s  min=$(scene_result["min"])s")
-        else
-            results["scenes"][scene_name] = OrderedDict("error" => something(bench_error, "no timings"))
-            println("  => FAILED")
-        end
+        result === nothing || (results["scenes"][scene_name] = result)
     end
 
     json_path = joinpath(output_dir, result_filename(prefix, version))
