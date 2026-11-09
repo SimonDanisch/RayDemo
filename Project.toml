@@ -36,6 +36,10 @@ VulkanCore = "16167f82-ea26-5cba-b1de-ed6fd5e30a11"
 WaterLily = "ed894a53-35f9-47f1-b17f-85db9237eebd"
 XPalm = "6b523e1e-d512-416c-8e51-a8fbef0064e7"
 
+[compat]
+Vulkan = "0.7"
+VulkanCore = "2"
+
 [sources]
 BiotSavartBCs = {rev = "main", url = "https://github.com/weymouth/BiotSavartBCs.jl"}
 ComputePipeline = {rev = "sd/lava", subdir = "ComputePipeline", url = "https://github.com/MakieOrg/Makie.jl.git"}
@@ -51,5 +55,3 @@ Mantle = {rev = "sd/mantle-dev", url = "https://github.com/SimonDanisch/Mantle.j
 MeshIO = {rev = "sd/gltf-glb", url = "https://github.com/JuliaIO/MeshIO.jl.git"}
 RayMakie = {rev = "sd/lava", subdir = "RayMakie", url = "https://github.com/MakieOrg/Makie.jl.git"}
 Raycore = {rev = "sd/with-texture", url = "https://github.com/JuliaGeometry/Raycore.jl"}
-Vulkan = {rev = "sd/vk1.4", url = "https://github.com/JuliaGPU/Vulkan.jl.git"}
-VulkanCore = {rev = "sd/vk1.4", url = "https://github.com/JuliaGPU/VulkanCore.jl.git"}

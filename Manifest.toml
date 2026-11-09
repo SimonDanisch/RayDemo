@@ -2,7 +2,7 @@
 
 julia_version = "1.12.7"
 manifest_format = "2.0"
-project_hash = "c7e2b7a5b617ea42a56e2a2e0d9841cfdf144da3"
+project_hash = "c33c724e70ea0dc6dd29054a65580ef21d11247a"
 
 [[deps.AMDGPU]]
 deps = ["AMDGPU_LLVM_Backend_jll", "AbstractFFTs", "AcceleratedKernels", "Adapt", "Atomix", "BFloat16s", "CEnum", "ExprTools", "GPUArrays", "GPUCompiler", "GPUToolbox", "KernelAbstractions", "LLVM", "Libdl", "LinearAlgebra", "Pkg", "PrecompileTools", "Preferences", "PrettyTables", "Printf", "ROCmDeviceLibs_jll", "Random", "Random123", "RandomNumbers", "SparseArrays", "StaticArraysCore", "Statistics", "UnsafeAtomics"]
@@ -2953,11 +2953,9 @@ weakdeps = ["LLVM"]
 
 [[deps.Vulkan]]
 deps = ["Accessors", "BitMasks", "DocStringExtensions", "Libdl", "Logging", "MLStyle", "PrecompileTools", "Preferences", "Reexport", "ResultTypes", "StructEquality", "VulkanCore"]
-git-tree-sha1 = "1834767ea0504e00d2091110f77cd116aa4b6bf4"
-repo-rev = "sd/vk1.4"
-repo-url = "https://github.com/JuliaGPU/Vulkan.jl.git"
+git-tree-sha1 = "73d15d16a44e70cf0d0b5e5e3895487685b71102"
 uuid = "9f14b124-c50e-4008-a7d4-969b3a6cd68a"
-version = "0.6.30"
+version = "0.7.0"
 
     [deps.Vulkan.extensions]
     VulkanColorTypesExt = "ColorTypes"
@@ -2965,27 +2963,33 @@ version = "0.6.30"
     VulkanFixedPointNumbersExt = "FixedPointNumbers"
     VulkanFixedPointNumbersStaticArraysCoreExt = ["FixedPointNumbers", "StaticArraysCore"]
     VulkanStaticArraysCoreExt = "StaticArraysCore"
+    VulkanSwiftShaderExt = "SwiftShader_jll"
     VulkanXCBExt = "XCB"
 
     [deps.Vulkan.weakdeps]
     ColorTypes = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
     FixedPointNumbers = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
     StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
+    SwiftShader_jll = "c404ff5a-e271-5628-8eaa-423d39d64c15"
     XCB = "16167f82-ea26-5cba-b1de-ed6fd5e30a10"
 
 [[deps.VulkanCore]]
-deps = ["Libdl", "Vulkan_Headers_jll"]
-git-tree-sha1 = "b2803b920ed50c1344ec651bdd7cdcb5d3199677"
-repo-rev = "sd/vk1.4"
-repo-url = "https://github.com/JuliaGPU/VulkanCore.jl.git"
+deps = ["Libdl", "Preferences", "Vulkan_Headers_jll", "Vulkan_Loader_jll"]
+git-tree-sha1 = "27eb0425d2901c3e72705a00490e49b1f0c6f83a"
 uuid = "16167f82-ea26-5cba-b1de-ed6fd5e30a11"
-version = "1.3.1"
+version = "2.0.0"
 
 [[deps.Vulkan_Headers_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "a2bfa46393bce7f450ee949273f2ba310d889693"
 uuid = "8d446b21-f3ad-5576-a034-752265b9b6f9"
 version = "1.4.321+0"
+
+[[deps.Vulkan_Loader_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Wayland_jll", "Xorg_libX11_jll", "Xorg_libXrandr_jll", "xkbcommon_jll"]
+git-tree-sha1 = "2f0486047a07670caad3a81a075d2e518acc5c59"
+uuid = "a44049a8-05dd-5a78-86c9-5fde0876e88c"
+version = "1.3.243+0"
 
 [[deps.WaterLily]]
 deps = ["ConstructionBase", "DocStringExtensions", "EllipsisNotation", "ForwardDiff", "KernelAbstractions", "LinearAlgebra", "LoggingExtras", "Preferences", "Printf", "Reexport", "Requires", "StaticArrays", "TOML"]
