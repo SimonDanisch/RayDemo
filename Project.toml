@@ -8,7 +8,7 @@ Extents = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
 FFMPEG_jll = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
-GPUSelect = "203851ad-5791-4cf9-9fcc-5933b5611f42"
+GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
 Geant4 = "559df036-b7a0-42fd-85df-7d5dd9d70f44"
 GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
 Hikari = "afc56b53-c9a9-482a-a956-d1d800e05558"
@@ -16,7 +16,6 @@ ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
-KernelInterfaces = "ce25d451-9bb5-4870-a156-ce22182641de"
 Lava = "3a680b1f-cb25-4bee-9cf7-bc880b76dc8c"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
@@ -36,22 +35,20 @@ VulkanCore = "16167f82-ea26-5cba-b1de-ed6fd5e30a11"
 WaterLily = "ed894a53-35f9-47f1-b17f-85db9237eebd"
 XPalm = "6b523e1e-d512-416c-8e51-a8fbef0064e7"
 
+[sources]
+BiotSavartBCs = {rev = "main", url = "https://github.com/weymouth/BiotSavartBCs.jl"}
+ComputePipeline = {rev = "sd/lava-refactor", subdir = "ComputePipeline", url = "https://github.com/MakieOrg/Makie.jl.git"}
+GPUArrays = {rev = "sd/mantle-diagonal-core", url = "https://github.com/SimonDanisch/GPUArrays.jl"}
+GLMakie = {rev = "sd/lava-refactor", subdir = "GLMakie", url = "https://github.com/MakieOrg/Makie.jl.git"}
+Hikari = {rev = "sd/lava-refactor", url = "https://github.com/JuliaGraphics/Hikari.jl"}
+KernelAbstractions = {rev = "sd/lava-refactor", url = "https://github.com/SimonDanisch/KernelAbstractions.jl"}
+Lava = {rev = "sd/lava-refactor", url = "https://github.com/SimonDanisch/Lava.jl"}
+Makie = {rev = "sd/lava-refactor", subdir = "Makie", url = "https://github.com/MakieOrg/Makie.jl.git"}
+Mantle = {rev = "sd/lava-refactor", url = "https://github.com/SimonDanisch/Mantle.jl"}
+MeshIO = {rev = "sd/gltf-glb", url = "https://github.com/JuliaIO/MeshIO.jl.git"}
+RayMakie = {rev = "sd/lava-refactor", subdir = "RayMakie", url = "https://github.com/MakieOrg/Makie.jl.git"}
+Raycore = {rev = "sd/with-texture", url = "https://github.com/JuliaGeometry/Raycore.jl"}
+
 [compat]
 Vulkan = "0.7"
 VulkanCore = "2"
-
-[sources]
-BiotSavartBCs = {rev = "main", url = "https://github.com/weymouth/BiotSavartBCs.jl"}
-ComputePipeline = {rev = "sd/lava", subdir = "ComputePipeline", url = "https://github.com/MakieOrg/Makie.jl.git"}
-GLMakie = {rev = "sd/lava", subdir = "GLMakie", url = "https://github.com/MakieOrg/Makie.jl.git"}
-GPUSelect = {rev = "main", url = "https://github.com/SimonDanisch/GPUSelect.jl"}
-Hikari = {rev = "sd/compile-optimizations", url = "https://github.com/JuliaGraphics/Hikari.jl"}
-# Lives in Mantle's repo under lib/, but is its own package (Lava depends on it
-# without depending on Mantle).
-KernelInterfaces = {rev = "sd/mantle-dev", subdir = "lib/KernelInterfaces", url = "https://github.com/SimonDanisch/Mantle.jl"}
-Lava = {rev = "sd/compiler-optimizations", url = "https://github.com/SimonDanisch/Lava.jl"}
-Makie = {rev = "sd/lava", subdir = "Makie", url = "https://github.com/MakieOrg/Makie.jl.git"}
-Mantle = {rev = "sd/mantle-dev", url = "https://github.com/SimonDanisch/Mantle.jl"}
-MeshIO = {rev = "sd/gltf-glb", url = "https://github.com/JuliaIO/MeshIO.jl.git"}
-RayMakie = {rev = "sd/lava", subdir = "RayMakie", url = "https://github.com/MakieOrg/Makie.jl.git"}
-Raycore = {rev = "sd/with-texture", url = "https://github.com/JuliaGeometry/Raycore.jl"}
